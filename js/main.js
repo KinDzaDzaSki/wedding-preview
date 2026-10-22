@@ -81,15 +81,28 @@ function navigateTo(url, direction = 'next') {
   body.dataset.navigationDirection = direction;
 
   if (hasGsap && !motionReduced) {
+    let navigated = false;
+
+    const go = () => {
+      if (navigated) {
+        return;
+      }
+
+      navigated = true;
+      window.location.href = url;
+    };
+
     window.gsap.to(body, {
       autoAlpha: 0,
       y: direction === 'previous' ? 24 : -24,
       duration: 0.72,
       ease: 'power3.inOut',
-      onComplete: () => {
-        window.location.href = url;
-      },
+      onComplete: go,
     });
+
+    /* Безбедносна мрежа: ако tween-от не заврши (скриен таб,
+       throttled rAF), навигацијата сепак се случува. */
+    window.setTimeout(go, 1400);
 
     return;
   }
@@ -262,11 +275,13 @@ if (envelope) {
     viewInvitationButton?.focus({ preventScroll: true });
   }
 
+  let scrollTimeline = null;
+
   function openScrollWithGsap() {
     const inset = window.innerWidth <= 600 ? 18 : 50;
     const openHeight = Math.max(320, window.innerHeight - (inset * 2));
 
-    window.gsap.timeline({
+    scrollTimeline = window.gsap.timeline({
       onComplete: () => {
         makeScrollAccessible();
         viewInvitationButton?.focus({ preventScroll: true });
@@ -322,6 +337,42 @@ if (envelope) {
       .set(envelopeShell, { display: 'none' }, 2);
   }
 
+  /* Ако GSAP не напредува (скриен таб, throttled rAF, прекинета
+     анимација), поканата не смее да остане заклучена: по 3.2 s
+     форсирај ја отворената состојба. */
+  function forceScrollOpen() {
+    if (body.classList.contains('scroll-opened')) {
+      return;
+    }
+
+    if (scrollTimeline) {
+      scrollTimeline.kill();
+    }
+
+    /* .wax-scroll е трансформиран предок, а position: fixed внатре во
+       трансформиран елемент се врзува за него — затоа интерјериот се
+       преместува директно во <body> пред да се фиксира за екранот. */
+    if (scrollInterior && scrollInterior.parentElement !== document.body) {
+      document.body.appendChild(scrollInterior);
+    }
+
+    body.classList.add('forced-open');
+    body.classList.add('scroll-opened');
+
+    if (scrollInterior) {
+      scrollInterior.removeAttribute('inert');
+      scrollInterior.setAttribute('aria-hidden', 'false');
+    }
+
+    makeScrollAccessible();
+
+    if (envelopeCover) {
+      envelopeCover.hidden = true;
+    }
+
+    viewInvitationButton?.focus({ preventScroll: true });
+  }
+
   function revealInvitation() {
     if (!invitationHome || !envelopeCover) {
       navigateTo(nextPage, 'next');
@@ -371,6 +422,7 @@ if (envelope) {
 
     if (hasGsap && !motionReduced) {
       openScrollWithGsap();
+      window.setTimeout(forceScrollOpen, 3200);
       return;
     }
 

@@ -2904,3 +2904,51 @@ body.page-leaving {
     margin-bottom: 12px;
   }
 }
+
+
+/* Присилно отворена покана — кога анимацијата не може да напредува
+   (скриен таб, throttled rAF, блокиран GSAP). Мора да изгледа исто. */
+body.forced-open .wax-scroll-cover,
+body.forced-open .wax-scroll-ambient,
+body.forced-open .wax-scroll-dust {
+  display: none !important;
+}
+
+body.forced-open .wax-scroll-interior {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 60;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(18px, 5vw, 44px) !important;
+  overflow-y: auto;
+  background: var(--parchment);
+  border-radius: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  rotate: none !important;
+}
+
+body.forced-open .wax-scroll-interior .wax-scroll-parchment {
+  width: min(100%, 560px);
+  max-height: none;
+  margin: auto;
+  transform: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.forced-open .wax-scroll-interior .wax-scroll-parchment * {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  translate: none !important;
+}
