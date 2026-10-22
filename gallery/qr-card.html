@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR картички за маса — свадбена галерија</title>
+<meta name="theme-color" content="#fdf8f4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Printable table cards — A6, four up on A4.
+   Print at 100% scale, no "fit to page", or the QR shrinks
+   below a reliable scannable size.
+   ============================================================ */
+:root{
+  --ivory:#fdf8f4; --blush:#f9eef0; --paper:#fffdfb;
+  --wine:#5c2a38; --wine-deep:#3a1620; --rose:#c96f80;
+  --gold:#b8905a; --gold-deep:#795a2f;
+  --ink:#4a3a3a; --ink-soft:#796863;
+  --serif:'Cormorant Garamond','Iowan Old Style',Georgia,serif;
+  --sans:'Montserrat','Helvetica Neue',-apple-system,'Segoe UI',Arial,sans-serif;
+  --card-w:105mm;      /* A6 */
+  --card-h:148mm;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;padding:26px 18px 60px;background:#efe7e2;
+  font-family:var(--sans);color:var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:22px;
+}
+.screen-note{
+  max-width:640px;background:#fff;border:1px solid rgba(92,42,56,.16);
+  border-radius:14px;padding:16px 20px;font-size:.82rem;line-height:1.6;
+  box-shadow:0 12px 30px -20px rgba(58,22,32,.5);
+}
+.screen-note h1{margin:0 0 8px;font-family:var(--serif);font-size:1.3rem;font-weight:500;color:var(--wine)}
+.screen-note ol{margin:8px 0 0;padding-left:20px}
+.screen-note li{margin:3px 0}
+.screen-note code{background:var(--blush);padding:1px 6px;border-radius:5px;font-size:.92em}
+.screen-note strong{color:var(--wine)}
+
+/* ---------- the sheet ---------- */
+.sheet{
+  width:210mm;height:296mm;overflow:hidden;background:#fff;
+  display:grid;grid-template-columns:repeat(2,var(--card-w));
+  grid-template-rows:repeat(2,var(--card-h));
+  justify-content:center;align-content:start;
+  box-shadow:0 20px 50px -30px rgba(58,22,32,.7);
+}
+
+.card{
+  position:relative;width:var(--card-w);height:var(--card-h);
+  break-inside:avoid;page-break-inside:avoid;
+  padding:11mm 9mm;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  text-align:center;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(201,111,128,.14), transparent 58%),
+    radial-gradient(circle at 88% 92%, rgba(184,144,90,.16), transparent 56%),
+    linear-gradient(168deg, var(--paper), var(--ivory) 46%, var(--blush));
+  color:var(--ink);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+/* the gold double hairline, inset like the invitation's frame */
+.card::before,.card::after{content:"";position:absolute;pointer-events:none}
+.card::before{inset:4.4mm;border:0.5pt solid rgba(184,144,90,.62);border-radius:2mm}
+.card::after{inset:5.9mm;border:0.35pt solid rgba(184,144,90,.34);border-radius:1.4mm}
+
+.card__top{position:relative;z-index:1}
+.card__kicker{
+  margin:0;font-size:6.4pt;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--gold-deep);font-weight:500;
+}
+.card__names{
+  margin:2.6mm 0 0;font-family:var(--serif);font-weight:500;
+  font-size:20pt;line-height:1.06;color:var(--wine);
+}
+.card__amp{
+  display:block;font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:11pt;color:var(--gold);margin:.6mm 0;
+}
+.card__date{
+  margin:2.4mm 0 0;font-size:6.8pt;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--rose);font-weight:500;
+}
+
+.card__qr{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2.4mm}
+.card__qr img{
+  width:41mm;height:41mm;display:block;padding:2.2mm;
+  background:#fff;border-radius:2mm;
+  box-shadow:0 0.6mm 2.4mm rgba(58,22,32,.13);
+}
+.card__qr span{
+  font-size:6pt;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);
+}
+
+.card__bottom{position:relative;z-index:1;max-width:64mm}
+.card__cta{
+  margin:0;font-family:var(--serif);font-size:11.4pt;line-height:1.24;color:var(--wine);
+}
+.card__hint{margin:1.8mm 0 0;font-size:6.2pt;line-height:1.5;color:var(--ink-soft)}
+.card__rule{
+  width:14mm;height:0.4pt;background:rgba(184,144,90,.6);margin:2.6mm auto 0;border:0;
+}
+
+/* cut guides, screen only */
+.card + .card{border-left:0.3pt dashed rgba(92,42,56,.22)}
+.sheet .card:nth-child(3){border-left:0;border-top:0.3pt dashed rgba(92,42,56,.22)}
+.sheet .card:nth-child(4){border-top:0.3pt dashed rgba(92,42,56,.22)}
+
+@media print{
+  @page{size:A4;margin:0}
+  /* NOTE: a bare (max-width:900px) query also matches A4 print width
+     (~793px), which stacked the cards into one column. Any responsive
+     block on a print sheet must be scoped to screen. */
+  body{background:#fff;padding:0;gap:0;display:block}
+  .screen-note{display:none}
+  .sheet{width:210mm;height:296mm;box-shadow:none;margin:0}
+  .card{break-inside:avoid;page-break-inside:avoid}
+  .card{border:0!important}
+}
+@media screen and (max-width:900px){
+  body{padding:16px 10px 40px}
+  .sheet{
+    width:100%;min-height:0;
+    grid-template-columns:1fr;grid-template-rows:none;
+    gap:14px;box-shadow:none;background:transparent;
+  }
+  .card{
+    width:100%;height:auto;aspect-ratio:105/148.5;padding:9% 8%;
+    border-radius:14px;box-shadow:0 14px 34px -24px rgba(58,22,32,.6);
+  }
+  .card + .card{border:0}
+  .card__qr img{width:38vw;height:38vw;max-width:41mm;max-height:41mm}
+}
+</style>
+</head>
+<body>
+
+<div class="screen-note">
+  <h1>QR картички за маса</h1>
+  <p>Четири картички A6 на еден лист A4. Исечете по линиите и ставете по една на секоја маса.</p>
+  <ol>
+    <li>Печатете со <strong>100% размер</strong> — без „Fit to page", инаку QR-кодот се смалува.</li>
+    <li>Вклучете печатење на позадина (<em>Background graphics</em>) за да излезе бојата.</li>
+    <li>Проверете еден код со телефон пред да печатете сите.</li>
+  </ol>
+  <p style="margin:10px 0 0">Кодот моментално води кон <code>https://wedding-gallery.pages.dev/</code> —
+  поставете ја вистинската адреса со
+  <code>python tools/set-gallery-url.py &lt;url&gt;</code> и оваа страница се ажурира сама.</p>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<script>
+/* Render the cards from one template so the QR path and the copy live in one place. */
+const CARDS = 4;
+const tpl = `
+  <div class="card__top">
+    <p class="card__kicker">Свадбена галерија</p>
+    <p class="card__names">Ружица<span class="card__amp">&amp;</span>Дамјан</p>
+    <p class="card__date">15 мај 2027 · Скопје</p>
+  </div>
+  <div class="card__qr">
+    <img src="qr.svg" alt="QR код за свадбената галерија со фотографии">
+    <span>Скенирај</span>
+  </div>
+  <div class="card__bottom">
+    <p class="card__cta">Споделете ги моментите што ги создадовте со нас</p>
+    <hr class="card__rule">
+    <p class="card__hint">Отворете ја камерата, насочете кон кодот и прикачете ги вашите фотографии — сите ќе ги видиме.</p>
+  </div>`;
+const sheet = document.getElementById('sheet');
+for (let i = 0; i < CARDS; i++) {
+  const d = document.createElement('div');
+  d.className = 'card';
+  d.innerHTML = tpl;
+  sheet.appendChild(d);
+}
+</script>
+</body>
+</html>
