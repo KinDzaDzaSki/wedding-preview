@@ -1,542 +1,779 @@
-/* ==========================================================================
-   Ружица & Дамјан — свадбена покана
-   Vanilla JS. No dependencies. Everything below a CONFIG block is generic.
-   ========================================================================== */
-(() => {
-  'use strict';
+const body = document.body;
+const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hasGsap = typeof window.gsap !== 'undefined';
 
-  /* ══════════════════════════════════════════════════════════════════════
-     CONFIG — change these per event
-     ══════════════════════════════════════════════════════════════════════ */
-  const CONFIG = {
-    // 15 May 2027, 16:00 Europe/Skopje (built from local parts so DST is handled)
-    eventStart: new Date(2027, 4, 15, 16, 0, 0),
-    ics: {
-      title: 'Ружица & Дамјан — свадба',
-      location: 'Соборен храм Св. Климент Охридски, Скопје',
-      description: 'Венчавка 16:00 · Свадбена прослава 19:30, Ресторан Александрија, Скопје',
-      end: new Date(2027, 4, 16, 2, 0, 0)
-    },
-    // RSVP: set `endpoint` to a Formspree / Netlify / Worker URL to go live.
-    // Left empty, the form validates and plays the success state locally (DEMO).
-    rsvpEndpoint: '',
-    musicVolume: 0.42
-  };
+const previousPage = body.dataset.previous;
+const nextPage = body.dataset.next;
+const previousNavigationLocked = body.hasAttribute('data-lock-previous');
 
-  const $  = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let navigationLocked = false;
+let touchStartY = 0;
+let touchStartX = 0;
 
-  /* ══════════════════════════════════════════════════════════════════════
-     1. PAGE DECK — next / prev / wheel / swipe / keyboard / dots
-     ══════════════════════════════════════════════════════════════════════ */
-  const pages    = $$('#deck .page');
-  const total    = pages.length;
-  const dotsHost = $('[data-dots]');
-  const bar      = $('[data-progress]');
-  const nowEl    = $('[data-page-now]');
-  const totalEl  = $('[data-page-total]');
-  const prevBtn  = $('[data-nav="prev"]');
-  const nextBtn  = $('[data-nav="next"]');
-  const DARK     = new Set(['4', '8']);          // dark ("forest") pages
+/* The invitation in reading order. The jump rail and the
+  page counter are both built from this, so adding a
+   page means editing one array. */
+const PAGES = [
+  { file: 'index.html', label: 'Поканети сте' },
+  { file: 'countdown.html', label: 'Одбројување' },
+  { file: 'story.html', label: 'Нашата приказна' },
+  { file: 'ceremony.html', label: 'Детали' },
+  { file: 'program.html', label: 'Програма' },
+  { file: 'details.html', label: 'Дрескод и подароци' },
+  { file: 'gallery.html', label: 'Галерија' },
+  { file: 'rsvp.html', label: 'Потврда на присуство' },
+  { file: 'thank-you.html', label: 'Ви благодариме' },
+];
 
-  let current = 1;
-  let locked  = false;
+/* ======================================================
+   HELPERS
+====================================================== */
 
-  if (totalEl) totalEl.textContent = total;
+function isFormElement(element) {
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement ||
+    element instanceof HTMLButtonElement
+  );
+}
 
-  // build dots
-  pages.forEach((p, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'dot';
-    b.setAttribute('aria-label', `Страница ${i + 1}`);
-    b.addEventListener('click', () => goTo(i + 1));
-    dotsHost && dotsHost.appendChild(b);
-  });
-  const dots = $$('.dot', dotsHost || document);
+function isEnvelopePage() {
+  return (
+    Boolean(document.querySelector('[data-envelope]')) &&
+    !body.classList.contains('home-revealed')
+  );
+}
 
-  function activate(n) {
-    const page = pages[n - 1];
-    if (!page) return;
-    current = n;
+function pageCanScroll() {
+  return document.documentElement.scrollHeight > window.innerHeight + 4;
+}
 
-    pages.forEach((p, i) => {
-      p.classList.toggle('is-active', i === n - 1);
-      if (i !== n - 1) { p.classList.remove('is-leaving'); p.setAttribute('aria-hidden', 'true'); }
-      else { p.removeAttribute('aria-hidden'); }
+function isAtVerticalScrollBoundary(direction) {
+  const scrollTop = window.scrollY || window.pageYOffset || 0;
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+  if (direction === 'next') {
+    return scrollTop <= 4;
+  }
+
+  if (direction === 'previous') {
+    return scrollTop >= maxScroll - 4;
+  }
+
+  return false;
+}
+
+function pad(value) {
+  return String(value).padStart(2, '0');
+}
+
+/* ======================================================
+   PAGE NAVIGATION
+====================================================== */
+
+function navigateTo(url, direction = 'next') {
+  if (!url || navigationLocked) {
+    return;
+  }
+
+  navigationLocked = true;
+  body.dataset.navigationDirection = direction;
+
+  if (hasGsap && !motionReduced) {
+    window.gsap.to(body, {
+      autoAlpha: 0,
+      y: direction === 'previous' ? 24 : -24,
+      duration: 0.72,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        window.location.href = url;
+      },
     });
 
-    document.body.classList.toggle('on-dark', DARK.has(String(n)));
-    document.body.classList.toggle('is-cover', n === 1);
-
-    dots.forEach((d, i) => d.setAttribute('aria-current', i === n - 1 ? 'true' : 'false'));
-    if (bar)  bar.style.width = ((n - 1) / (total - 1) * 100) + '%';
-    if (nowEl) nowEl.textContent = n;
-    if (prevBtn) prevBtn.disabled = n === 1;
-    if (nextBtn) nextBtn.disabled = n === total;
-
-    revealIn(page, n);
-
-    const scroller = $('.wrap', page);
-    if (scroller) scroller.scrollTop = 0;
-
-    syncHash(n);
+    return;
   }
 
-  function goTo(n, dir) {
-    if (locked || n < 1 || n > total || n === current) return;
-    const leaving = pages[current - 1];
-    const to = n > current ? 'next' : 'prev';
-    locked = true;
+  body.classList.add('page-leaving');
 
-    leaving.setAttribute('data-dir', to);
-    if (!REDUCED) {
-      leaving.classList.add('is-leaving');
-      setTimeout(() => { leaving.classList.remove('is-leaving'); activate(n); locked = false; }, 330);
-    } else {
-      activate(n);
-      locked = false;
+  window.setTimeout(() => {
+    window.location.href = url;
+  }, 400);
+}
+
+/* The prev/next controls are real links so the invitation
+   still works without JavaScript; here we only take them
+   over to play the transition first. */
+document.querySelectorAll('[data-go-next]').forEach((control) => {
+  control.addEventListener('click', (event) => {
+    if (!nextPage) {
+      return;
     }
-  }
-  const next = () => goTo(current + 1);
-  const prev = () => goTo(current - 1);
 
-  window.goTo = goTo;
-  window.next = next;
-  window.prev = prev;
-
-  /* ── deep links: #p1 … #p9 (or #rsvp, #програма…) — shareable per section ── */
-  const HASH = {
-    cover: 1, date: 2, datum: 2, story: 2 + 1, prikazna: 3, details: 4,
-    detali: 4, program: 5, programa: 5, dresscode: 6, dreskod: 6,
-    gallery: 7, galerija: 7, rsvp: 8, potvrda: 8, thanks: 9, blagodarime: 9
-  };
-  function pageFromHash() {
-    const h = decodeURIComponent((location.hash || '').replace(/^#/, '')).toLowerCase().trim();
-    if (!h) return 0;
-    const m = h.match(/^p?(\d)$/);
-    if (m) return Math.min(total, Math.max(1, +m[1]));
-    return HASH[h] || 0;
-  }
-  function syncHash(n) {
-    if (history.replaceState) history.replaceState(null, '', '#p' + n);
-    else location.hash = 'p' + n;
-  }
-
-  // arrow buttons
-  prevBtn && prevBtn.addEventListener('click', prev);
-  nextBtn && nextBtn.addEventListener('click', next);
-  $$('[data-nav="next"]:not(.nav-arrow), [data-action="next"]').forEach(b =>
-    b.addEventListener('click', next));
-  $$('[data-nav="first"]').forEach(b => b.addEventListener('click', () => goTo(1)));
-
-  /* ── wheel: advance only at the scroll boundary ── */
-  let wheelAcc = 0, wheelLock = 0;
-  window.addEventListener('wheel', (e) => {
-    const page = pages[current - 1];
-    const sc = $('.wrap', page);
-    if (sc) {
-      const atTop    = sc.scrollTop <= 1;
-      const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1;
-      const canScroll = sc.scrollHeight > sc.clientHeight + 2;
-      if (canScroll && ((e.deltaY > 0 && !atBottom) || (e.deltaY < 0 && !atTop))) return;
-    }
-    const now = Date.now();
-    if (now - wheelLock < 780) { e.preventDefault(); return; }
-    wheelAcc += e.deltaY;
-    if (Math.abs(wheelAcc) > 42) {
-      const dir = wheelAcc > 0 ? next : prev;
-      wheelAcc = 0; wheelLock = now;
-      e.preventDefault();
-      dir();
-    }
-  }, { passive: false });
-
-  /* ── touch swipe ── */
-  let ty0 = 0, tx0 = 0, tracking = false;
-  window.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    ty0 = e.touches[0].clientY; tx0 = e.touches[0].clientX; tracking = true;
-  }, { passive: true });
-
-  window.addEventListener('touchend', (e) => {
-    if (!tracking) return;
-    tracking = false;
-    const t = e.changedTouches[0];
-    const dy = t.clientY - ty0, dx = t.clientX - tx0;
-    if (Math.abs(dy) < 58 || Math.abs(dy) < Math.abs(dx)) return;   // ignore horizontal
-    const page = pages[current - 1];
-    const sc = $('.wrap', page);
-    if (sc) {
-      const atTop    = sc.scrollTop <= 1;
-      const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1;
-      const canScroll = sc.scrollHeight > sc.clientHeight + 2;
-      if (canScroll && ((dy < 0 && !atBottom) || (dy > 0 && !atTop))) return;
-    }
-    dy < 0 ? next() : prev();
-  }, { passive: true });
-
-  /* ── keyboard ── */
-  window.addEventListener('keydown', (e) => {
-    const tag = (e.target.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) return;
-    switch (e.key) {
-      case 'ArrowDown': case 'PageDown': case ' ': e.preventDefault(); next(); break;
-      case 'ArrowUp':   case 'PageUp':            e.preventDefault(); prev(); break;
-      case 'ArrowRight': e.preventDefault(); next(); break;
-      case 'ArrowLeft':  e.preventDefault(); prev(); break;
-      case 'Home': e.preventDefault(); goTo(1); break;
-      case 'End':  e.preventDefault(); goTo(total); break;
-      case 'Escape': closeLightbox(); break;
-    }
+    event.preventDefault();
+    event.stopPropagation();
+    navigateTo(nextPage, 'next');
   });
+});
 
-  /* ══════════════════════════════════════════════════════════════════════
-     2. REVEAL ON SCROLL (first visit per page only)
-     ══════════════════════════════════════════════════════════════════════ */
-  const io = ('IntersectionObserver' in window)
-    ? new IntersectionObserver((entries) => {
-        entries.forEach(en => {
-          if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
-        });
-      }, { threshold: 0.10, rootMargin: '0px 0px -5% 0px' })
-    : null;
+document.querySelectorAll('[data-go-previous]').forEach((control) => {
+  control.addEventListener('click', (event) => {
+    if (previousNavigationLocked) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
 
-  const visited = new Set();
+    if (!previousPage) {
+      return;
+    }
 
-  function revealIn(page, n) {
-    const items = $$('.reveal', page);
-    if (visited.has(n)) { items.forEach(el => el.classList.add('is-visible')); return; }
-    visited.add(n);
-    if (REDUCED || !io) { items.forEach(el => el.classList.add('is-visible')); return; }
-    requestAnimationFrame(() => items.forEach(el => io.observe(el)));
-    // safety net: content must never stay invisible. If an element is skipped
-    // (fast scroll, jump-to-anchor, scrollbar drag) it still becomes visible.
-    setTimeout(() => items.forEach(el => el.classList.add('is-visible')), 2600);
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    navigateTo(previousPage, 'previous');
+  });
+});
 
-  /* ══════════════════════════════════════════════════════════════════════
-     3. WAX-SEAL ENVELOPE
-     ══════════════════════════════════════════════════════════════════════ */
-  const envelope = $('[data-envelope]');
-  const interior = $('[data-interior]');
-  const trigger  = $('[data-env-trigger]');
-  let opened = false;
+/* ======================================================
+   PROGRESS RAIL
+====================================================== */
 
-  function openEnvelope() {
-    if (opened || !envelope) return;
-    opened = true;
-    envelope.classList.add('is-open');
-    trigger && trigger.setAttribute('aria-expanded', 'true');
-    startMusic();                       // this tap is the autoplay permission
-    const wait = REDUCED ? 40 : 820;
-    setTimeout(() => {
-      if (interior) {
-        interior.removeAttribute('inert');
-        interior.setAttribute('aria-hidden', 'false');
-        interior.classList.add('is-revealed');
+const progress = document.querySelector('[data-page-progress]');
+
+if (progress) {
+  const currentIndex = Number(progress.dataset.pageProgress) - 1;
+
+  const counter = document.createElement('p');
+  counter.className = 'page-count';
+  counter.innerHTML = `<b>${pad(currentIndex + 1)}</b> <span>/ ${pad(PAGES.length)}</span>`;
+  progress.append(counter);
+
+  /* Hidden below 760px / on touch — see .page-dots. */
+  const rail = document.createElement('ol');
+  rail.className = 'page-dots';
+
+  PAGES.forEach((page, index) => {
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+
+    link.className = 'page-dot';
+    link.href = page.file;
+    link.textContent = '';
+    link.setAttribute('aria-label', `${index + 1}. ${page.label}`);
+
+    if (index === currentIndex) {
+      link.setAttribute('aria-current', 'page');
+    }
+
+    link.addEventListener('click', (event) => {
+      if (index === currentIndex) {
+        event.preventDefault();
+        return;
       }
-      setTimeout(() => envelope.classList.add('is-gone'), REDUCED ? 0 : 700);
-    }, wait);
-  }
-  trigger && trigger.addEventListener('click', (e) => { e.currentTarget.blur(); openEnvelope(); });
 
-  /* ══════════════════════════════════════════════════════════════════════
-     4. BACKGROUND MUSIC
-     ══════════════════════════════════════════════════════════════════════ */
-  const audio = $('#bg-music');
-  const musicBtn = $('#music-toggle');
-  let fading = null;
-
-  function fadeTo(target, ms = 1400) {
-    if (!audio) return;
-    if (fading) cancelAnimationFrame(fading);
-    const from = audio.volume, t0 = performance.now();
-    const step = (now) => {
-      const p = Math.min(1, (now - t0) / ms);
-      audio.volume = Math.max(0, Math.min(1, from + (target - from) * p));
-      if (p < 1) fading = requestAnimationFrame(step);
-    };
-    fading = requestAnimationFrame(step);
-  }
-
-  function startMusic() {
-    if (!audio) return;
-    if (audio.preload === 'none') audio.preload = 'auto';
-    audio.volume = 0;
-    audio.play().then(() => {
-      fadeTo(CONFIG.musicVolume, 2200);
-      musicBtn && musicBtn.setAttribute('aria-pressed', 'true');
-      musicBtn && musicBtn.setAttribute('aria-label', 'Паузирај музика во позадина');
-    }).catch(() => { /* blocked or no file — the toggle still works */ });
-  }
-
-  function stopMusic() {
-    fadeTo(0, 700);
-    setTimeout(() => audio && audio.pause(), 720);
-    musicBtn && musicBtn.setAttribute('aria-pressed', 'false');
-    musicBtn && musicBtn.setAttribute('aria-label', 'Пушти музика во позадина');
-  }
-
-  musicBtn && musicBtn.addEventListener('click', () => {
-    if (!audio) return;
-    if (audio.paused) {
-      if (audio.preload === 'none') audio.preload = 'auto';
-      audio.play().then(() => { fadeTo(CONFIG.musicVolume, 900);
-        musicBtn.setAttribute('aria-pressed', 'true');
-        musicBtn.setAttribute('aria-label', 'Паузирај музика во позадина');
-      }).catch(() => {});
-    } else {
-      stopMusic();
-    }
-  });
-
-  // pause the loop when the tab is hidden (considerate, and saves battery)
-  document.addEventListener('visibilitychange', () => {
-    if (!audio || audio.paused) return;
-    if (document.hidden) audio.pause();
-    else audio.play().catch(() => {});
-  });
-
-  /* ══════════════════════════════════════════════════════════════════════
-     5. COUNTDOWN  (Macedonian pluralisation)
-     ══════════════════════════════════════════════════════════════════════ */
-  // MK: 1 ден · 2 дена · 5 дена — anything other than exactly 1 takes the plural.
-  const daysWord = n => (n === 1 ? 'Ден' : 'Дена');
-  const pad = n => String(n).padStart(2, '0');
-
-  const cd = {
-    days: $('[data-cd-days]'), hours: $('[data-cd-hours]'),
-    mins: $('[data-cd-mins]'), secs: $('[data-cd-secs]'),
-    daysLabel: $('[data-cd-days-label]')
-  };
-
-  function tickCountdown() {
-    if (!cd.days) return;
-    const s = Math.max(0, Math.floor((CONFIG.eventStart.getTime() - Date.now()) / 1000));
-    const d = Math.floor(s / 86400);
-    if (cd.days) cd.days.textContent = pad(d);
-    if (cd.hours) cd.hours.textContent = pad(Math.floor(s % 86400 / 3600));
-    if (cd.mins) cd.mins.textContent = pad(Math.floor(s % 3600 / 60));
-    if (cd.secs) cd.secs.textContent = pad(s % 60);
-    if (cd.daysLabel) cd.daysLabel.textContent = daysWord(d);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-     6. ADD TO CALENDAR (.ics, generated in the browser)
-     ══════════════════════════════════════════════════════════════════════ */
-  const icsStamp = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const icsEsc = s => String(s).replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
-
-  function downloadIcs() {
-    const { title, description, location, end } = CONFIG.ics;
-    const lines = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//poraka//RuzicaDamjan//MK',
-      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
-      `UID:ruzica-damjan-2027@invitation`,
-      `DTSTAMP:${icsStamp(new Date())}`,
-      `DTSTART:${icsStamp(CONFIG.eventStart)}`,
-      `DTEND:${icsStamp(end)}`,
-      `SUMMARY:${icsEsc(title)}`,
-      `DESCRIPTION:${icsEsc(description)}`,
-      `LOCATION:${icsEsc(location)}`,
-      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY',
-      `DESCRIPTION:${icsEsc('Утре е големиот ден!')}`, 'END:VALARM',
-      'END:VEVENT', 'END:VCALENDAR'
-    ];
-    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'), { href: url, download: 'ruzica-damjan-15-05-2027.ics' });
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-  $$('[data-ics]').forEach(b => b.addEventListener('click', downloadIcs));
-
-  /* ══════════════════════════════════════════════════════════════════════
-     7. GALLERY LIGHTBOX
-     ══════════════════════════════════════════════════════════════════════ */
-  const lb = $('[data-lightbox-box]');
-  const lbImg = $('[data-lb-img]');
-  const lbCap = $('[data-lb-cap]');
-  let lastFocus = null;
-
-  function openLightbox(src, caption) {
-    if (!lb) return;
-    lastFocus = document.activeElement;
-    lbImg.src = src;
-    lbImg.alt = caption || '';
-    lbCap.textContent = caption || '';
-    lb.hidden = false;
-    document.body.style.overflow = 'hidden';
-    $('[data-lb-close]') && $('[data-lb-close]').focus();
-  }
-  function closeLightbox() {
-    if (!lb || lb.hidden) return;
-    lb.hidden = true;
-    lbImg.src = '';
-    document.body.style.overflow = '';
-    lastFocus && lastFocus.focus();
-  }
-
-  $$('[data-lightbox]').forEach(btn => {
-    btn.addEventListener('click', () => openLightbox(btn.getAttribute('data-lightbox'), btn.getAttribute('data-caption')));
-  });
-  $('[data-lb-close]') && $('[data-lb-close]').addEventListener('click', closeLightbox);
-  lb && lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
-
-  /* ══════════════════════════════════════════════════════════════════════
-     8. CONFETTI (tiny canvas particle system, palette-matched)
-     ══════════════════════════════════════════════════════════════════════ */
-  const canvas = $('[data-confetti]');
-  let ctx = null, particles = [], raf = null;
-
-  function sizeCanvas() {
-    if (!canvas) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = innerWidth * dpr;
-    canvas.height = innerHeight * dpr;
-    ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  window.addEventListener('resize', sizeCanvas);
-
-  function burst(count = 110) {
-    if (!canvas || REDUCED) return;
-    if (!ctx) sizeCanvas();
-    const colors = ['#c96f80', '#a85566', '#b8905a', '#e8bfc8', '#ecdcc0', '#5c2a38', '#fffdfb'];
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: innerWidth * (0.5 + (Math.random() - 0.5) * 0.5),
-        y: innerHeight * 0.42 + (Math.random() - 0.5) * 60,
-        vx: (Math.random() - 0.5) * 9,
-        vy: Math.random() * -12 - 3.5,
-        g: 0.24 + Math.random() * 0.14,
-        w: 5 + Math.random() * 7,
-        h: 8 + Math.random() * 9,
-        rot: Math.random() * Math.PI,
-        vr: (Math.random() - 0.5) * 0.22,
-        c: colors[(Math.random() * colors.length) | 0],
-        life: 1
-      });
-    }
-    if (!raf) raf = requestAnimationFrame(step);
-  }
-
-  function step() {
-    if (!ctx || !canvas) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles = particles.filter(p => p.life > 0 && p.y < innerHeight + 80);
-    particles.forEach(p => {
-      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= 0.995;
-      p.rot += p.vr; p.life -= 0.0042;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.c;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
+      event.preventDefault();
+      navigateTo(page.file, index < currentIndex ? 'previous' : 'next');
     });
-    if (particles.length) raf = requestAnimationFrame(step);
-    else { ctx.clearRect(0, 0, canvas.width, canvas.height); raf = null; }
+
+    item.append(link);
+    rail.append(item);
+  });
+
+  progress.prepend(rail);
+}
+
+/* ======================================================
+   WAX-SEAL ENVELOPE OPENING
+====================================================== */
+
+const envelope = document.querySelector('[data-envelope]');
+
+if (envelope) {
+  const envelopeTrigger = document.querySelector('[data-envelope-trigger]');
+  const viewInvitationButton = document.querySelector('[data-view-invitation]');
+  const invitationHome = document.querySelector('[data-invitation-home]');
+  const envelopeCover = document.querySelector('[data-envelope-cover]');
+  const envelopeShell = envelope.querySelector('[data-wax-envelope]');
+  const envelopeFlap = envelope.querySelector('[data-wax-envelope-flap]');
+  const envelopeBottomFold = envelope.querySelector('.wax-envelope-fold--bottom');
+  const scrollInterior = envelope.querySelector('[data-scroll-interior]');
+  const seal = envelope.querySelector('.wax-envelope-seal');
+  const parchmentContent = scrollInterior?.querySelectorAll(
+    '.ornament, .wax-scroll-kicker, .wax-scroll-header, .wax-scroll-divider, .wax-scroll-message, .button'
+  ) || [];
+  const homeContent = invitationHome?.querySelectorAll('.reveal') || [];
+
+  let hasOpened = false;
+
+  function makeScrollAccessible() {
+    scrollInterior?.setAttribute('aria-hidden', 'false');
+    scrollInterior?.removeAttribute('inert');
+    body.classList.add('scroll-opened');
   }
 
-  /* ══════════════════════════════════════════════════════════════════════
-     9. RSVP FORM
-     ══════════════════════════════════════════════════════════════════════ */
-  const form = $('.rsvp');
-  const guestsField = $('[data-guests-field]');
-  const msgEl = $('[data-form-msg]');
+  function finishInvitationReveal() {
+    body.classList.add('home-revealed');
+    invitationHome?.classList.add('is-visible');
+    invitationHome?.setAttribute('aria-hidden', 'false');
+    invitationHome?.removeAttribute('inert');
 
-  function setMsg(text, kind) {
-    if (!msgEl) return;
-    msgEl.textContent = text;
-    msgEl.className = 'form-msg' + (kind ? ' is-' + kind : '');
+    if (envelopeCover) {
+      envelopeCover.setAttribute('aria-hidden', 'true');
+      envelopeCover.hidden = true;
+    }
+
+    invitationHome?.querySelector('[data-go-next]')?.focus({ preventScroll: true });
   }
 
-  function syncGuests() {
-    if (!form || !guestsField) return;
-    const v = (form.querySelector('input[name="attending"]:checked') || {}).value;
-    guestsField.classList.toggle('is-hidden', v !== 'yes');
+  if (hasGsap && !motionReduced) {
+    body.classList.add('gsap-ready');
+
+    window.gsap.set(invitationHome, {
+      display: 'none',
+      autoAlpha: 0,
+      y: 36,
+      scale: 0.98,
+    });
+    window.gsap.set(homeContent, { autoAlpha: 0, y: 22 });
+    window.gsap.set(scrollInterior, { autoAlpha: 0, visibility: 'hidden' });
+    window.gsap.set(parchmentContent, { autoAlpha: 0, y: 18 });
+    window.gsap.set(envelopeFlap, {
+      rotationX: 0,
+      transformOrigin: '50% 0%',
+    });
+    window.gsap.set(envelopeBottomFold, {
+      rotationX: 0,
+      transformOrigin: '50% 100%',
+    });
+    window.gsap.from(envelopeShell, {
+      autoAlpha: 0,
+      y: 28,
+      scale: 0.9,
+      duration: 1,
+      ease: 'power3.out',
+    });
   }
 
-  form && form.addEventListener('change', syncGuests);
-  syncGuests();
+  function openScrollFallback() {
+    scrollInterior.style.visibility = 'visible';
+    scrollInterior.style.opacity = '1';
+    scrollInterior.style.top = '18px';
+    makeScrollAccessible();
+    viewInvitationButton?.focus({ preventScroll: true });
+  }
 
-  form && form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(form).entries());
+  function openScrollWithGsap() {
+    const inset = window.innerWidth <= 600 ? 18 : 50;
+    const openHeight = Math.max(320, window.innerHeight - (inset * 2));
 
-    if (!String(data.name || '').trim()) {
-      setMsg('Името и презимето се задолжителни.', 'error');
-      $('#r-name') && $('#r-name').focus();
+    window.gsap.timeline({
+      onComplete: () => {
+        makeScrollAccessible();
+        viewInvitationButton?.focus({ preventScroll: true });
+      },
+    })
+      .to(seal, {
+        scale: 1.1,
+        rotation: 15,
+        autoAlpha: 0,
+        duration: 0.5,
+        ease: 'power2.in',
+      }, 0)
+      .to(envelopeFlap, {
+        rotationX: 180,
+        duration: 0.85,
+        ease: 'power2.inOut',
+      }, 0.25)
+      .to(envelopeBottomFold, {
+        rotationX: -180,
+        duration: 0.75,
+        ease: 'power2.inOut',
+      }, 0.42)
+      .set(envelopeFlap, { zIndex: 1 }, 1.11)
+      .set(envelopeBottomFold, { zIndex: 9 }, 1.17)
+      .set(scrollInterior, {
+        visibility: 'visible',
+        top: inset,
+        height: openHeight,
+        scale: 0.94,
+        y: 30,
+      }, 1.12)
+      .to(scrollInterior, {
+        scale: 1,
+        y: 0,
+        autoAlpha: 1,
+        duration: 0.9,
+        ease: 'power3.out',
+      }, 1.12)
+      .to(envelopeShell, {
+        y: 90,
+        scale: 0.94,
+        autoAlpha: 0,
+        duration: 0.7,
+        ease: 'power3.inOut',
+      }, 1.28)
+      .to(parchmentContent, {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.65,
+        stagger: 0.055,
+        ease: 'power3.out',
+      }, 1.45)
+      .set(envelopeShell, { display: 'none' }, 2);
+  }
+
+  function revealInvitation() {
+    if (!invitationHome || !envelopeCover) {
+      navigateTo(nextPage, 'next');
       return;
     }
-    if (!data.attending) {
-      setMsg('Те молам дали ќе присуствувате — избери една опција.', 'error');
+
+    if (!hasGsap || motionReduced) {
+      finishInvitationReveal();
       return;
     }
 
-    const btn = form.querySelector('button[type="submit"]');
-    const label = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Се испраќа...';
-    setMsg('', '');
+    viewInvitationButton.disabled = true;
+    window.gsap.set(invitationHome, { display: 'flex', visibility: 'visible' });
+
+    window.gsap.timeline({ onComplete: finishInvitationReveal })
+      .to(envelopeCover, {
+        autoAlpha: 0,
+        scale: 1.03,
+        duration: 0.75,
+        ease: 'power2.inOut',
+      }, 0)
+      .to(invitationHome, {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.85,
+        ease: 'power3.out',
+      }, 0.18)
+      .to(homeContent, {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.06,
+        ease: 'power3.out',
+      }, 0.32);
+  }
+
+  function openScroll() {
+    if (hasOpened) {
+      return;
+    }
+
+    hasOpened = true;
+    body.classList.add('scroll-opening');
+    envelopeTrigger.setAttribute('aria-expanded', 'true');
+    envelopeTrigger.disabled = true;
+
+    if (hasGsap && !motionReduced) {
+      openScrollWithGsap();
+      return;
+    }
+
+    openScrollFallback();
+  }
+
+  envelopeTrigger?.addEventListener('click', openScroll);
+  viewInvitationButton?.addEventListener('click', revealInvitation);
+}
+
+if (!envelope && hasGsap && !motionReduced) {
+  body.classList.add('gsap-ready');
+
+  const reveals = window.gsap.utils.toArray('.reveal');
+
+  window.gsap.fromTo(reveals, {
+    autoAlpha: 0,
+    y: 0,
+  }, {
+    autoAlpha: 1,
+    y: 0,
+    duration: 0.45,
+    stagger: 0.05,
+    ease: 'power1.out',
+    clearProps: 'transform',
+  });
+}
+
+const galleryLightbox = document.querySelector('[data-gallery-lightbox]');
+const galleryLightboxImage = document.querySelector('[data-gallery-lightbox-image]');
+const galleryLightboxCaption = document.querySelector('[data-gallery-lightbox-caption]');
+const galleryClose = document.querySelector('[data-gallery-close]');
+
+function closeGalleryLightbox() {
+  if (galleryLightbox?.open) {
+    galleryLightbox.close();
+  }
+}
+
+document.querySelectorAll('[data-gallery-photo]').forEach((photo) => {
+  photo.addEventListener('click', () => {
+    if (!galleryLightbox || !galleryLightboxImage) {
+      return;
+    }
+
+    const image = photo.querySelector('img');
+    galleryLightboxImage.src = photo.dataset.gallerySrc || image?.src || galleryLightboxImage.src;
+    galleryLightboxImage.alt = image?.alt || '';
+
+    if (galleryLightboxCaption) {
+      galleryLightboxCaption.textContent = image?.alt || 'Теодора & Никола';
+    }
+
+    galleryLightbox.showModal();
+  });
+});
+
+galleryClose?.addEventListener('click', closeGalleryLightbox);
+galleryLightbox?.addEventListener('click', (event) => {
+  if (event.target === galleryLightbox) {
+    closeGalleryLightbox();
+  }
+});
+
+/* ======================================================
+   MOUSE WHEEL NAVIGATION
+====================================================== */
+
+let wheelTimeout = null;
+
+window.addEventListener(
+  'wheel',
+  (event) => {
+    if (isEnvelopePage() || navigationLocked) {
+      return;
+    }
+
+    const isRsvpPage = Boolean(document.querySelector('[data-rsvp-form]'));
+
+    if (isRsvpPage && previousNavigationLocked) {
+      return;
+    }
+
+    if (Math.abs(event.deltaY) < 30) {
+      return;
+    }
+
+    if (pageCanScroll() && !isAtVerticalScrollBoundary(event.deltaY > 0 ? 'next' : 'previous')) {
+      return;
+    }
+
+    const direction = event.deltaY > 0 ? 'next' : 'previous';
+
+    clearTimeout(wheelTimeout);
+
+    wheelTimeout = window.setTimeout(() => {
+      navigateTo(direction === 'next' ? nextPage : previousPage, direction);
+    }, 80);
+  },
+  { passive: true }
+);
+
+/* ======================================================
+   MOBILE SWIPE NAVIGATION
+====================================================== */
+
+window.addEventListener(
+  'touchstart',
+  (event) => {
+    if (!event.touches.length) {
+      return;
+    }
+
+    touchStartY = event.touches[0].clientY;
+    touchStartX = event.touches[0].clientX;
+  },
+  { passive: true }
+);
+
+window.addEventListener(
+  'touchend',
+  (event) => {
+    if (isEnvelopePage()) {
+      return;
+    }
+
+    if (!event.changedTouches.length || navigationLocked) {
+      return;
+    }
+
+    const hasInteractiveButtonPage = document.querySelector('.wax-scroll-interior [data-view-invitation]') || document.querySelector('.invitation-home [data-go-next]');
+    if (hasInteractiveButtonPage) {
+      return;
+    }
+
+    const isRsvpPage = Boolean(document.querySelector('[data-rsvp-form]'));
+    const touch = event.changedTouches[0];
+    const deltaY = touch.clientY - touchStartY;
+    const deltaX = touch.clientX - touchStartX;
+    const swipeThreshold = 32;
+
+    if (Math.abs(deltaY) < swipeThreshold || Math.abs(deltaY) < Math.abs(deltaX)) {
+      return;
+    }
+
+    if (isRsvpPage && previousNavigationLocked) {
+      return;
+    }
+
+    if (pageCanScroll()) {
+      const atTop = window.scrollY <= 8;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+
+      if (deltaY < 0 && !atBottom) {
+        return;
+      }
+
+      if (deltaY > 0 && !atTop) {
+        return;
+      }
+    }
+
+    if (deltaY < 0) {
+      navigateTo(nextPage, 'next');
+      return;
+    }
+
+    navigateTo(previousPage, 'previous');
+  },
+  { passive: true }
+);
+
+/* ======================================================
+   KEYBOARD NAVIGATION
+====================================================== */
+
+window.addEventListener('keydown', (event) => {
+  if (isEnvelopePage() || navigationLocked) {
+    return;
+  }
+
+  if (isFormElement(document.activeElement)) {
+    return;
+  }
+
+  const nextKeys = ['ArrowDown', 'ArrowRight', 'PageDown'];
+  const previousKeys = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+
+  if (nextKeys.includes(event.key)) {
+    event.preventDefault();
+    navigateTo(nextPage, 'next');
+    return;
+  }
+
+  if (previousKeys.includes(event.key)) {
+    if (previousNavigationLocked) {
+      return;
+    }
+
+    event.preventDefault();
+    navigateTo(previousPage, 'previous');
+  }
+});
+
+/* ======================================================
+   COUNTDOWN
+====================================================== */
+
+const countdown = document.querySelector('[data-countdown]');
+
+if (countdown) {
+  const weddingDate = new Date(countdown.dataset.weddingDate);
+
+  const daysElement = countdown.querySelector('[data-days]');
+  const hoursElement = countdown.querySelector('[data-hours]');
+  const minutesElement = countdown.querySelector('[data-minutes]');
+  const secondsElement = countdown.querySelector('[data-seconds]');
+
+  /* The four numerals tick every second, so they stay out of
+     the accessibility tree; screen readers get one sentence
+     that is only rewritten when the day count changes. */
+  const summary = document.querySelector('[data-countdown-summary]');
+  let announcedDays = null;
+
+  function daysWord(count) {
+    return count === 1 ? 'ден' : 'дена';
+  }
+
+  function updateCountdown() {
+    const difference = Math.max(0, weddingDate.getTime() - Date.now());
+
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+
+    const days = Math.floor(difference / day);
+    const hours = Math.floor((difference % day) / hour);
+    const minutes = Math.floor((difference % hour) / minute);
+    const seconds = Math.floor((difference % minute) / second);
+
+    if (daysElement) daysElement.textContent = pad(days);
+    if (hoursElement) hoursElement.textContent = pad(hours);
+    if (minutesElement) minutesElement.textContent = pad(minutes);
+    if (secondsElement) secondsElement.textContent = pad(seconds);
+
+    if (summary && days !== announcedDays) {
+      announcedDays = days;
+
+      summary.textContent = difference === 0
+        ? 'Денот е тука.'
+        : `Остануваат уште ${days} ${daysWord(days)} до 15 мај 2027.`;
+    }
+  }
+
+  updateCountdown();
+  window.setInterval(updateCountdown, 1000);
+}
+
+/* ======================================================
+   RSVP FORM
+====================================================== */
+
+const rsvpForm = document.querySelector('[data-rsvp-form]');
+
+if (rsvpForm) {
+  const messageElement = rsvpForm.querySelector('[data-form-message]');
+  const nameElement = rsvpForm.querySelector('[name="name"]');
+  const attendanceElement = rsvpForm.querySelector('[name="attendance"]');
+  const guestsGroup = rsvpForm.querySelector('[data-guests-group]');
+  /* Остави празно за демо режим (одговорот останува само во конзолата).
+     За вистински одговори стави URL од Google Apps Script / Formspree. */
+  const GOOGLE_SHEETS_WEB_APP_URL = '';
+
+  function syncGuestsVisibility() {
+    if (!guestsGroup || !attendanceElement) {
+      return;
+    }
+
+    guestsGroup.hidden = attendanceElement.value === 'no';
+  }
+
+  function setMessage(text, isError) {
+    if (!messageElement) {
+      return;
+    }
+
+    messageElement.textContent = text;
+    messageElement.classList.toggle('is-error', Boolean(isError));
+  }
+
+  attendanceElement?.addEventListener('change', () => {
+    syncGuestsVisibility();
+    attendanceElement.removeAttribute('aria-invalid');
+  });
+
+  nameElement?.addEventListener('input', () => {
+    nameElement.removeAttribute('aria-invalid');
+  });
+
+  syncGuestsVisibility();
+
+  rsvpForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(rsvpForm);
+
+    const name = formData.get('name')?.toString().trim();
+    const attendance = formData.get('attendance')?.toString();
+    const guests = formData.get('guests')?.toString();
+    const message = formData.get('message')?.toString().trim();
+
+    if (!name) {
+      nameElement?.setAttribute('aria-invalid', 'true');
+      setMessage('Внесете го Вашето име и презиме за да ја испратиме потврдата.', true);
+      nameElement?.focus();
+      return;
+    }
+
+    if (!attendance) {
+      attendanceElement?.setAttribute('aria-invalid', 'true');
+      setMessage('Изберете дали ќе присуствувате.', true);
+      attendanceElement?.focus();
+      return;
+    }
+
+    const payload = {
+      name,
+      attendance,
+      guests: attendance === 'no' ? '0' : (guests || '1'),
+      message: message || '',
+      timestamp: new Date().toISOString(),
+    };
+
+    if (!GOOGLE_SHEETS_WEB_APP_URL) {
+      console.info('[RSVP] DEMO — одговорот не е испратен:', payload);
+    } else {
+    try {
+      const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        body: new URLSearchParams(payload).toString(),
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`HTTP ${response.status}${text ? `: ${text}` : ''}`);
+      }
+    } catch (error) {
+      console.error('Грешка при испраќање во Google Sheet:', error);
+      setMessage('Не успеа да се испрати одговорот. Обидете се повторно.', true);
+      return;
+    }
+    }
+
+    setMessage(
+      attendance === 'yes'
+        ? `Ви благодариме, ${name}. Ве очекуваме на 15 мај 2027.`
+        : `Ви благодариме што нè известивте, ${name}. Ќе ни недостасувате.`,
+      false
+    );
+
+    const submitButton = rsvpForm.querySelector('[type="submit"]');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Одговорот е испратен';
+    }
+
+    window.setTimeout(() => navigateTo('thank-you.html', 'next'), 1600);
+  });
+}
+
+
+/* ======================================================
+   BACKGROUND MUSIC
+====================================================== */
+
+const musicToggle = document.querySelector('[data-music-toggle]');
+const musicLoop = document.querySelector('[data-music-loop]');
+
+if (musicToggle && musicLoop) {
+  musicToggle.addEventListener('click', async () => {
+    const playing = musicToggle.getAttribute('aria-pressed') === 'true';
+
+    if (playing) {
+      musicLoop.pause();
+      musicToggle.setAttribute('aria-pressed', 'false');
+      musicToggle.setAttribute('aria-label', 'Пушти музика во позадина');
+      musicToggle.textContent = '♪';
+      return;
+    }
 
     try {
-      if (CONFIG.rsvpEndpoint) {
-        const res = await fetch(CONFIG.rsvpEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-      } else {
-        await new Promise(r => setTimeout(r, 850));   // DEMO — no endpoint configured
-        console.info('[RSVP demo]', data);
-      }
-      setMsg(data.attending === 'yes'
-        ? 'Успешно испратено! Се гледаме на 15 мај 2027. 🎉'
-        : 'Ти благодариме за одговорот — ќе ни недостигаш. 🤍', 'ok');
-      form.reset();
-      syncGuests();
-      if (data.attending === 'yes') burst(130);
-    } catch (err) {
-      setMsg('Грешка при испраќање. Обиди се повторно.', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = label;
+      musicLoop.volume = 0.3;
+      await musicLoop.play();
+      musicToggle.setAttribute('aria-pressed', 'true');
+      musicToggle.setAttribute('aria-label', 'Паузирај музика');
+      musicToggle.textContent = '❙❙';
+    } catch (error) {
+      console.info('Музиката не може да се пушти:', error);
     }
   });
-
-  /* ══════════════════════════════════════════════════════════════════════
-     10. BOOT
-     ══════════════════════════════════════════════════════════════════════ */
-  sizeCanvas();
-  tickCountdown();
-  setInterval(tickCountdown, 1000);
-
-  // deep link: open straight to a section (and skip the envelope ritual)
-  const startPage = pageFromHash() || 1;
-  if (startPage > 1) {
-    opened = true;
-    envelope && envelope.classList.add('is-open', 'is-gone');
-    if (interior) {
-      interior.removeAttribute('inert');
-      interior.setAttribute('aria-hidden', 'false');
-      interior.classList.add('is-revealed');
-    }
-  }
-  activate(startPage);
-
-  window.addEventListener('hashchange', () => {
-    const n = pageFromHash();
-    if (n && n !== current) { locked = false; activate(n); }
-  });
-
-  // preload the album art so the gallery never flashes
-  window.addEventListener('load', () => {
-    ['assets/art-1.svg', 'assets/art-3.svg'].forEach(s => { const i = new Image(); i.src = s; });
-  });
-})();
+}

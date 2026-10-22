@@ -1,409 +1,89 @@
 <!DOCTYPE html>
 <html lang="mk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#fdf8f4">
-<meta name="description" content="Свадбена покана за Ружица и Дамјан — сабота, 15 мај 2027, Скопје. Поканети сте да прославите со нас.">
-<meta name="robots" content="noindex, nofollow">
-<link rel="canonical" href="https://ruzica-damjan.example/">
-
-<meta property="og:type" content="website">
-<meta property="og:locale" content="mk_MK">
-<meta property="og:site_name" content="Ружица и Дамјан">
-<meta property="og:title" content="Ружица и Дамјан — свадбена покана">
-<meta property="og:description" content="Сабота, 15 мај 2027 · Скопје. Поканети сте да прославите со нас — потврдете присуство до 1 мај 2027.">
-<meta property="og:image" content="assets/og-image.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Покана со восочен печат Р&Д, Ружица и Дамјан, 15 мај 2027">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ружица и Дамјан — свадбена покана">
-<meta name="twitter:description" content="Сабота, 15 мај 2027 · Скопје.">
-<meta name="twitter:image" content="assets/og-image.png">
-<title>Ружица &amp; Дамјан — Свадбена покана</title>
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235c2a38'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='15' fill='%23fbf7f1'%3EР%26Д%3C/text%3E%3C/svg%3E">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#512732">
+  <meta name="description" content="Свадбена покана за Ружица и Дамјан — сабота, 15 мај 2027, Скопје.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="mk_MK">
+  <meta property="og:title" content="Ружица и Дамјан — свадбена покана">
+  <meta property="og:description" content="Сабота, 15 мај 2027 · Скопје. Поканети сте да прославите со нас.">
+  <meta property="og:url" content="https://kindzadzaski.github.io/wedding-preview/">
+  <meta property="og:image" content="https://kindzadzaski.github.io/wedding-preview/assets/og-image.png">
+  <meta property="og:image:alt" content="Ружица и Дамјан — свадбена покана">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://kindzadzaski.github.io/wedding-preview/">
+  <title>Ружица и Дамјан — Покана</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20fill='%23512732'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='10.5'%20fill='none'%20stroke='%23f3ede1'%20stroke-width='1.25'/%3E%3Cpath%20d='M16%2010.5%20l4%205.5%20-4%205.5%20-4%20-5.5%20z'%20fill='%23f3ede1'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="is-cover">
+<body class="envelope-page" data-next="countdown.html">
+  <section class="wax-scroll-cover" data-envelope-cover aria-label="Свадбена покана со восочен печат">
+    <div class="wax-scroll-ambient" aria-hidden="true"></div>
+    <div class="wax-scroll-dust" aria-hidden="true"></div>
 
-<a class="skip-link" href="#p2">Прескокни до содржината</a>
+    <div class="wax-scroll" data-envelope>
+      <div class="wax-envelope" data-wax-envelope>
+        <div class="wax-envelope-back" aria-hidden="true"></div>
+        <div class="wax-envelope-inner" aria-hidden="true"></div>
 
-<!-- ============ chrome: progress + dots + music ============ -->
-<div class="chrome" aria-hidden="true">
-  <div class="progress"><span class="progress-bar" data-progress></span></div>
-  <nav class="dots" data-dots></nav>
-  <p class="page-counter"><span data-page-now>1</span> / <span data-page-total>9</span></p>
-</div>
-
-<button class="music-toggle" id="music-toggle" type="button"
-        aria-pressed="false" aria-label="Пушти музика во позадина">
-  <span class="music-icon" aria-hidden="true">
-    <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
-  </span>
-</button>
-
-<audio id="bg-music" src="audio/wedding.mp3" loop preload="none"></audio>
-
-<!-- ============ nav arrows ============ -->
-<button class="nav-arrow nav-arrow--prev" type="button" data-nav="prev" aria-label="Претходно">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-</button>
-<button class="nav-arrow nav-arrow--next" type="button" data-nav="next" aria-label="Следно">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-</button>
-
-<main id="deck">
-
-<!-- ═══════════════ 1 · COVER ═══════════════ -->
-<section class="page page--cover" id="p1" data-page="1" aria-label="Корица">
-  <div class="ambient" aria-hidden="true"></div>
-  <div class="dust" aria-hidden="true"></div>
-
-  <div class="envelope" data-envelope>
-    <div class="env-back" aria-hidden="true"></div>
-    <div class="env-glow" aria-hidden="true"></div>
-
-    <div class="env-flap" data-env-flap aria-hidden="true">
-      <div class="env-flap-face env-flap-face--front"></div>
-      <div class="env-flap-face env-flap-face--back"></div>
-    </div>
-
-    <div class="env-fold env-fold--l" aria-hidden="true"></div>
-    <div class="env-fold env-fold--r" aria-hidden="true"></div>
-    <div class="env-fold env-fold--b" aria-hidden="true"></div>
-
-    <button class="seal" type="button" data-env-trigger aria-expanded="false"
-            aria-label="Отворете ја свадбената покана">
-      <span class="seal-ring">
-        <span class="seal-emblem">
-          <span>Р</span><i>&amp;</i><span>Д</span>
-        </span>
-      </span>
-    </button>
-
-    <p class="env-prompt" aria-hidden="true">Допрете за да отворите</p>
-  </div>
-
-  <div class="cover-interior" data-interior aria-hidden="true" inert>
-    <article class="parchment reveal">
-      <p class="kicker">Заедно со нашите семејства</p>
-      <h1 class="names">
-        <span class="name">Ружица</span>
-        <i class="amp">&amp;</i>
-        <span class="name">Дамјан</span>
-      </h1>
-      <div class="divider" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-      <p class="cover-line">
-        Со огромна чест и задоволство ве покануваме<br class="br-desk"> да бидете дел од нашиот посебен ден.
-      </p>
-      <p class="cover-date">Сабота, 15 мај 2027 · Скопје</p>
-      <button class="btn btn--filled" type="button" data-action="next">Отворете ја поканата</button>
-    </article>
-  </div>
-
-  <p class="scroll-hint" aria-hidden="true"><span></span>Повлечете или скролувајте</p>
-</section>
-
-<!-- ═══════════════ 2 · SAVE THE DATE + COUNTDOWN ═══════════════ -->
-<section class="page page--light" id="p2" data-page="2" aria-label="Датум и одбројување">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap wrap--center">
-    <p class="kicker reveal">Зачувајте го датумот</p>
-    <h2 class="display reveal reveal-d1">Се венчаваме</h2>
-
-    <div class="date-block reveal reveal-d2">
-      <span class="date-day">15</span>
-      <span class="date-side">
-        <span class="date-month">мај</span>
-        <span class="date-year">2027</span>
-      </span>
-    </div>
-    <p class="date-weekday reveal reveal-d2">Сабота · Скопје, Македонија</p>
-
-    <div class="divider reveal reveal-d3" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <p class="section-note reveal reveal-d3">Одбројуваме — уште само</p>
-    <div class="countdown reveal reveal-d3" data-countdown>
-      <div class="cd-item"><span class="cd-value" data-cd-days>00</span><span class="cd-label" data-cd-days-label>Дена</span></div>
-      <div class="cd-item"><span class="cd-value" data-cd-hours>00</span><span class="cd-label">Часа</span></div>
-      <div class="cd-item"><span class="cd-value" data-cd-mins>00</span><span class="cd-label">Минути</span></div>
-      <div class="cd-item"><span class="cd-value" data-cd-secs>00</span><span class="cd-label">Секунди</span></div>
-    </div>
-
-    <p class="quote reveal">Едвај чекаме да го споделиме овој ден со вас.</p>
-    <button class="btn btn--ghost" type="button" data-ics>Додај во календар</button>
-  </div>
-</section>
-
-<!-- ═══════════════ 3 · STORY ═══════════════ -->
-<section class="page page--light page--alt" id="p3" data-page="3" aria-label="Нашата приказна">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap">
-    <p class="kicker reveal">За нас</p>
-    <h2 class="display reveal reveal-d1">Како <em>тоа</em> почна сè</h2>
-    <div class="divider reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <div class="story">
-      <figure class="story-side reveal reveal-d2">
-        <div class="story-art"><img src="assets/art-2.svg" alt="" width="400" height="500" loading="lazy" decoding="async"></div>
-        <figcaption>Ружица &amp; Дамјан · од 2019</figcaption>
-      </figure>
-
-      <div class="story-body">
-        <blockquote class="story-quote story-quote--a reveal reveal-d2">
-          <p>Првпат се сретнавме во 2019 година, на кафе во центарот на Скопје — сосема случајно, на иста маса.</p>
-          <cite>Ружица</cite>
-        </blockquote>
-        <blockquote class="story-quote story-quote--b reveal reveal-d3">
-          <p>Ми требаа две години да ја поканам на вистински состанок. Вредеше секој ден од чекањето.</p>
-          <cite>Дамјан</cite>
-        </blockquote>
-        <p class="story-coda reveal reveal-d3">
-          Шест години подоцна, на зајдисонце над Охридското Езеро, Дамјан клекна на колено.
-          <strong>Таа рече „да“.</strong>
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════ 4 · DETAILS (dark) ═══════════════ -->
-<section class="page page--wine" id="p4" data-page="4" aria-label="Детали за настанот">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap">
-    <p class="kicker kicker--invert reveal">Нашиот ден</p>
-    <h2 class="display display--invert reveal reveal-d1">Детали</h2>
-    <div class="divider divider--invert reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <div class="venues">
-      <article class="venue reveal reveal-d2">
-        <p class="venue-tag">Венчавка</p>
-        <h3 class="venue-name">Соборен храм<br>Св. Климент Охридски</h3>
-        <p class="venue-addr">Плоштад Пресвета Богородица, Скопје</p>
-        <p class="venue-time"><time datetime="2027-05-15T16:00">16:00</time></p>
-        <a class="btn btn--ghost btn--onDark"
-           href="https://www.google.com/maps/search/?api=1&amp;query=%D0%A1%D0%BE%D0%B1%D0%BE%D1%80%D0%B5%D0%BD+%D1%85%D1%80%D0%B0%D0%BC+%D0%A1%D0%B2.+%D0%9A%D0%BB%D0%B8%D0%BC%D0%B5%D0%BD%D1%82+%D0%9E%D1%85%D1%80%D0%B8%D0%B4%D1%81%D0%BA%D0%B8+%D0%A1%D0%BA%D0%BE%D0%BF%D1%98%D0%B5"
-           target="_blank" rel="noopener">Погледни локација</a>
-      </article>
-
-      <div class="venue-sep" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-      <article class="venue reveal reveal-d3">
-        <p class="venue-tag">Свадбена прослава</p>
-        <h3 class="venue-name">Ресторан<br>Александрија</h3>
-        <p class="venue-addr">бул. Илинден бб, Скопје</p>
-        <p class="venue-time"><time datetime="2027-05-15T19:30">19:30</time></p>
-        <a class="btn btn--ghost btn--onDark"
-           href="https://www.google.com/maps/search/?api=1&amp;query=%D0%A0%D0%B5%D1%81%D1%82%D0%BE%D1%80%D0%B0%D0%BD+%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%B8%D1%98%D0%B0+%D0%A1%D0%BA%D0%BE%D0%BF%D1%98%D0%B5"
-           target="_blank" rel="noopener">Погледни локација</a>
-      </article>
-    </div>
-
-    <div class="map-panel reveal reveal-d3">
-      <iframe title="Карта — Соборен храм Св. Климент Охридски, Скопје" loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.openstreetmap.org/export/embed.html?bbox=21.4170%2C41.9930%2C21.4380%2C42.0030&amp;layer=mapnik&amp;marker=41.9980%2C21.4275"></iframe>
-    </div>
-
-    <p class="venue-foot reveal">Ќе има обезбеден паркинг пред ресторанот, како и трансфер од црквата до прославата.</p>
-  </div>
-</section>
-
-<!-- ═══════════════ 5 · PROGRAM ═══════════════ -->
-<section class="page page--light" id="p5" data-page="5" aria-label="Програма">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap wrap--narrow">
-    <p class="kicker reveal">Распоред на настани</p>
-    <h2 class="display reveal reveal-d1">Програма</h2>
-    <div class="divider reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <ol class="timeline">
-      <li class="tl-item reveal reveal-d1"><span class="tl-time">15:30</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Пречек на гостите пред црквата</span></li>
-      <li class="tl-item reveal reveal-d1"><span class="tl-time">16:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Црковна венчавка</span></li>
-      <li class="tl-item reveal reveal-d2"><span class="tl-time">17:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Заедничко фотографирање</span></li>
-      <li class="tl-item reveal reveal-d2"><span class="tl-time">18:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Коктел и добредојде</span></li>
-      <li class="tl-item reveal reveal-d3"><span class="tl-time">19:30</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Свечена вечера</span></li>
-      <li class="tl-item reveal reveal-d3"><span class="tl-time">21:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Прв танц на младенците</span></li>
-      <li class="tl-item reveal reveal-d3"><span class="tl-time">22:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Сечење на тортата</span></li>
-      <li class="tl-item reveal reveal-d3"><span class="tl-time">23:00</span><span class="tl-dot" aria-hidden="true"></span><span class="tl-text">Забава до зори</span></li>
-    </ol>
-  </div>
-</section>
-
-<!-- ═══════════════ 6 · DRESS CODE + GIFTS ═══════════════ -->
-<section class="page page--light page--alt" id="p6" data-page="6" aria-label="Дрескод и подароци">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap">
-    <p class="kicker reveal">Мал детал за совршена слика</p>
-    <h2 class="display reveal reveal-d1">Дрескод</h2>
-    <div class="divider reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <p class="dress-note reveal reveal-d2">
-      Ќе ни биде особено драго ако се облечете во некоја од овие нијанси.
-    </p>
-
-    <ul class="swatches reveal reveal-d2">
-      <li class="swatch" style="--sw:#fdf8f4"><span class="sw-chip"></span><span class="sw-name">Ивоар</span></li>
-      <li class="swatch" style="--sw:#e8bfc8"><span class="sw-chip"></span><span class="sw-name">Прашкаста роза</span></li>
-      <li class="swatch" style="--sw:#c96f80"><span class="sw-chip"></span><span class="sw-name">Роза</span></li>
-      <li class="swatch" style="--sw:#d4b378"><span class="sw-chip"></span><span class="sw-name">Шампањ</span></li>
-      <li class="swatch" style="--sw:#5c2a38"><span class="sw-chip"></span><span class="sw-name">Бордо</span></li>
-    </ul>
-
-    <div class="panel reveal reveal-d3">
-      <h3 class="panel-title">Подароци</h3>
-      <p class="panel-line">Вашето присуство е најголемиот подарок за нас!</p>
-      <p class="panel-sub">Доколку сепак сакате да ни помогнете во заедничкиот почеток:</p>
-      <ul class="gift-list">
-        <li><span class="gift-who">Невеста — Ружица</span><span class="gift-bank">Комерцијална банка</span><span class="gift-iban">MK00 0000 0000 0000 000</span></li>
-        <li><span class="gift-who">Младоженец — Дамјан</span><span class="gift-bank">Стопанска банка</span><span class="gift-iban">MK00 1111 1111 1111 111</span></li>
-      </ul>
-      <p class="gift-note">* Прикажаните податоци се примерни (демо).</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════ 7 · GALLERY ═══════════════ -->
-<section class="page page--light" id="p7" data-page="7" aria-label="Галерија">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap">
-    <p class="kicker reveal">Некои моменти се создадени да се паметат засекогаш</p>
-    <h2 class="display reveal reveal-d1">Галерија</h2>
-    <div class="divider reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-
-    <ul class="gallery">
-      <li class="gtile gtile--hero reveal reveal-d1"><button type="button" data-lightbox="assets/art-1.svg" data-caption="Нашиот ден заедно"><img src="assets/art-1.svg" alt="Илустрација — лак со маслинови гранчиња" loading="lazy" decoding="async"><span class="gtile-cap">Нашиот ден</span></button></li>
-      <li class="gtile reveal reveal-d2"><button type="button" data-lightbox="assets/art-2.svg" data-caption="Ветувањето"><img src="assets/art-2.svg" alt="Илустрација — два прстена" loading="lazy" decoding="async"><span class="gtile-cap">Ветувањето</span></button></li>
-      <li class="gtile reveal reveal-d2"><button type="button" data-lightbox="assets/art-6.svg" data-caption="Охрид, каде што рече „да“"><img src="assets/art-6.svg" alt="Илустрација — езеро и планини" loading="lazy" decoding="async"><span class="gtile-cap">Охрид</span></button></li>
-      <li class="gtile reveal reveal-d3"><button type="button" data-lightbox="assets/art-3.svg" data-caption="Букет од ружи"><img src="assets/art-3.svg" alt="Илустрација — букет рози" loading="lazy" decoding="async"><span class="gtile-cap">Букетот</span></button></li>
-      <li class="gtile reveal reveal-d3"><button type="button" data-lightbox="assets/art-4.svg" data-caption="Св. Климент Охридски"><img src="assets/art-4.svg" alt="Илустрација — црква" loading="lazy" decoding="async"><span class="gtile-cap">Храмот</span></button></li>
-    </ul>
-    <p class="gallery-note reveal">Изработено со ♥ · илустрации наместо фотографии (демо)</p>
-
-    <!-- standalone guest gallery — its own page, reached by this QR on the tables -->
-    <div class="gal-cta reveal reveal-d3" id="galleryCta">
-      <div class="gal-cta__txt">
-        <h3>Споделете ги вашите фотографии</h3>
-        <p>Скенирајте го кодот на масата или отворете ја галеријата за да ги прикачите вашите фотографии и да ги видите сите од нашиот ден.</p>
-        <a class="btn btn--filled gal-cta__btn" href="https://wedding-gallery.pages.dev/" target="_blank" rel="noopener">
-          Отвори ја галеријата
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-      </div>
-      <a class="gal-cta__qr" href="https://wedding-gallery.pages.dev/" target="_blank" rel="noopener" aria-label="Отвори ја галеријата за фотографии">
-        <img id="galleryQr" src="assets/qr-gallery.svg" alt="QR код за свадбената галерија со фотографии" width="120" height="120" loading="lazy" decoding="async">
-        <span>Скенирај</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════ 8 · RSVP ═══════════════ -->
-<section class="page page--wine" id="p8" data-page="8" aria-label="Потврда на присуство">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap wrap--narrow">
-    <p class="kicker kicker--invert reveal">Те очекуваме</p>
-    <h2 class="display display--invert reveal reveal-d1">Потврди го твоето присуство</h2>
-    <div class="divider divider--invert reveal reveal-d1" aria-hidden="true"><span></span><i>◆</i><span></span></div>
-    <p class="rsvp-deadline reveal reveal-d2">Те молам потврди до <strong>1 мај 2027</strong></p>
-
-    <form class="rsvp reveal reveal-d2" novalidate>
-      <div class="field">
-        <label class="field-label" for="r-name">Име и презиме</label>
-        <input class="field-input" id="r-name" name="name" type="text" autocomplete="name" required placeholder="Марија Николовска">
-      </div>
-
-      <fieldset class="field field--radio">
-        <legend class="field-label">Дали ќе присуствувате?</legend>
-        <div class="radio-row">
-          <label class="radio"><input type="radio" name="attending" value="yes" required><span>Со задоволство доаѓам</span></label>
-          <label class="radio"><input type="radio" name="attending" value="no"><span>За жал, не можам</span></label>
+        <div class="wax-envelope-flap" data-wax-envelope-flap aria-hidden="true">
+          <div class="wax-envelope-flap-face wax-envelope-flap-face--front"></div>
+          <div class="wax-envelope-flap-face wax-envelope-flap-face--back"></div>
         </div>
-      </fieldset>
 
-      <div class="field" data-guests-field>
-        <label class="field-label" for="r-guests">Број на гости (со вас)</label>
-        <select class="field-input field-select" id="r-guests" name="guests">
-          <option value="1">1</option><option value="2">2</option>
-          <option value="3">3</option><option value="4">4</option><option value="5">5</option>
-        </select>
+        <div class="wax-envelope-fold wax-envelope-fold--left" aria-hidden="true"></div>
+        <div class="wax-envelope-fold wax-envelope-fold--right" aria-hidden="true"></div>
+        <div class="wax-envelope-fold wax-envelope-fold--bottom" aria-hidden="true"></div>
+
+        <button
+          class="wax-envelope-seal"
+          type="button"
+          data-envelope-trigger
+          aria-label="Отворете ја свадбената покана"
+          aria-expanded="false"
+        >
+          <span class="wax-scroll-seal-ring" aria-hidden="true">
+            <span class="wax-scroll-seal-emblem ampersand">Р&amp;Д</span>
+          </span>
+        </button>
+
+        <p class="wax-scroll-prompt" aria-hidden="true">Допрете за да отворите</p>
       </div>
 
-      <div class="field">
-        <label class="field-label" for="r-message">Порака за младенците <span class="opt">(опционално)</span></label>
-        <textarea class="field-input field-textarea" id="r-message" name="message" rows="3" placeholder="Ви посакувам љубов што расте со секој изминат ден…"></textarea>
+      <div class="wax-scroll-interior" data-scroll-interior aria-hidden="true" inert>
+        <article class="wax-scroll-parchment">
+          <header class="wax-scroll-header">
+            <div class="wax-scroll-names" aria-label="Ружица и Дамјан">
+              <span>Ружица</span>
+              <i class="fam">&amp;</i>
+              <span>Дамјан</span>
+            </div>
+            <p class="wax-scroll-date">сабота, 15 мај 2027</p>
+            <p class="wax-scroll-venue">Скопје · Македонија</p>
+          </header>
+
+          <div class="wax-scroll-divider" aria-hidden="true"><span></span><i>◆</i><span></span></div>
+
+          <p class="wax-scroll-message">
+            Со огромна чест и задоволство ве покануваме да бидете дел од нашиот посебен ден.
+          </p>
+
+          <button class="button button--filled" type="button" data-view-invitation>
+            Отворете ја поканата
+          </button>
+        </article>
       </div>
-
-      <button class="btn btn--filled btn--onDark btn--wide" type="submit">Испрати потврда</button>
-      <p class="form-msg" role="status" aria-live="polite" data-form-msg></p>
-      <p class="form-hint">Вашите податоци се користат само за организација на настанот.</p>
-    </form>
-  </div>
-</section>
-
-<!-- ═══════════════ 9 · THANK YOU ═══════════════ -->
-<section class="page page--light" id="p9" data-page="9" aria-label="Благодариме">
-  <div class="grain" aria-hidden="true"></div>
-  <div class="frame" aria-hidden="true"></div>
-  <div class="wrap wrap--center">
-    <div class="thanks-mark reveal" aria-hidden="true">
-      <svg viewBox="0 0 240 26" width="240" height="26" role="presentation">
-        <g fill="none" stroke="#b08d57" stroke-width="1.4" stroke-linecap="round">
-          <path d="M0,13 L86,13"/><path d="M154,13 L240,13"/>
-          <path d="M120,3 l7,10 -7,10 -7,-10 z" fill="#b08d57" stroke="none"/>
-        </g>
-      </svg>
     </div>
-    <h2 class="script reveal reveal-d1">Благодариме</h2>
-    <p class="thanks-line reveal reveal-d2">
-      Ви благодариме што сте дел од нашата приказна.<br class="br-desk">
-      Се гледаме на 15 мај 2027.
-    </p>
-    <p class="signature reveal reveal-d3">Ружица &amp; Дамјан</p>
+  </section>
 
-    <div class="contact reveal reveal-d3">
-      <p class="contact-title">За секое прашање</p>
-      <p class="contact-row">
-        <a href="tel:+38970000000">+389 70 000 000</a>
-        <span aria-hidden="true">·</span>
-        <a href="viber://chat?number=%2B38970000000">Viber</a>
-        <span aria-hidden="true">·</span>
-        <a href="mailto:ruzica.damjan@example.com">ruzica.damjan@example.com</a>
-      </p>
-    </div>
-
-    <button class="btn btn--ghost reveal reveal-d3" type="button" data-nav="first">Кон почетокот</button>
-  </div>
-</section>
-
-</main>
-
-<!-- lightbox -->
-<div class="lightbox" data-lightbox-box hidden>
-  <button class="lb-close" type="button" data-lb-close aria-label="Затвори">✕</button>
-  <figure class="lb-figure">
-    <img data-lb-img src="" alt="">
-    <figcaption data-lb-cap></figcaption>
-  </figure>
-</div>
-
-<canvas class="confetti" data-confetti aria-hidden="true"></canvas>
-
-<script src="js/main.js" defer></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+  <script defer src="js/main.js"></script>
 </body>
 </html>
