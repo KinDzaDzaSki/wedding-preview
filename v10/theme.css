@@ -1,0 +1,21 @@
+/* Champagne & night — editorial неутрално, топло сиво-беж */
+:root {
+  --paper: #f5f2ec;
+  --paper-alt: #ebe8e1;
+  --card: #fffefa;
+  --bg: #f5f2ec;
+  --bg-alt: #ebe8e1;
+
+  --ink: #241f26;
+  --ink-soft: #6f6870;
+
+  --wine: #a4815f;
+  --wine-dark: #7d5f42;
+  --gold: #b08d57;
+  --oxblood: #a4815f;
+  --plum: #a4815f;
+  --plum-dark: #7d5f42;
+
+  --line: rgba(36, 31, 38, 0.14);
+  --line-strong: rgba(36, 31, 38, 0.38);
+}

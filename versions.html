@@ -3,43 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ружица и Дамјан — три верзии</title>
+<title>Ружица и Дамјан — верзии</title>
 <style>
-  body{margin:0;padding:40px 22px 60px;font:15px/1.7 'Montserrat',system-ui,sans-serif;color:#2a2426;background:#f7f3ec}
-  .w{max-width:720px;margin:0 auto}
-  h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:400;font-size:2rem;margin:0 0 6px}
-  p.sub{color:#7a6f70;margin:0 0 30px;font-size:13px}
-  a.card{display:block;padding:20px 22px;margin-bottom:12px;background:#fff;border:1px solid rgba(42,36,38,.12);border-radius:14px;text-decoration:none;color:inherit;transition:border-color .2s}
-  a.card:hover{border-color:#5d2231}
-  b{display:block;font-family:'Cormorant Garamond',Georgia,serif;font-size:1.3rem;font-weight:600;margin-bottom:2px}
-  span.d{display:block;font-size:12.5px;color:#7a6f70}
-  span.u{display:block;margin-top:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5d2231}
+  body{margin:0;padding:36px 20px 64px;font:15px/1.65 'Montserrat',system-ui,sans-serif;color:#2a2426;background:#f7f3ec}
+  .w{max-width:760px;margin:0 auto}
+  h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:400;font-size:2rem;margin:0 0 4px}
+  p.sub{color:#7a6f70;margin:0 0 26px;font-size:13px}
+  h2{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#8a7f70;margin:28px 0 10px;font-weight:600}
+  a.card{display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:10px;background:#fff;border:1px solid rgba(42,36,38,.12);border-radius:14px;text-decoration:none;color:inherit;transition:border-color .2s,transform .2s}
+  a.card:hover{border-color:#5d2231;transform:translateY(-1px)}
+  .dots{display:flex;gap:4px;flex:0 0 auto}
+  .dots i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(42,36,38,.18);display:block}
+  .txt b{display:block;font-family:'Cormorant Garamond',Georgia,serif;font-size:1.22rem;font-weight:600;line-height:1.25}
+  .txt span{display:block;font-size:12px;color:#7a6f70;margin-top:2px}
+  .txt u{display:block;margin-top:5px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5d2231;text-decoration:none}
 </style>
 </head>
 <body>
 <div class="w">
-  <h1>Три верзии на поканата</h1>
-  <p class="sub">Иста содржина, ист бекенд (RSVP + честитки). Различна структура, не само боја.</p>
+  <h1>Верзии на поканата</h1>
+  <p class="sub">Иста содржина и ист бекенд (RSVP + честитки). Различни структури и палети — не само боја.</p>
 
-  <a class="card" href="v5/"><b>V5 — Editorial</b>
-    <span class="d">Магазински ритам: полни ширини, асиметрична мрежа, нумерирани секции, програма како табела, галерија како филм-лента.</span>
-    <span class="u">/v5/</span></a>
+  <h2>Структури</h2>
+  <a class="card" href="v5/"><span class="dots"><i style="background:#fbf7f0"></i><i style="background:#6b1f2e"></i><i style="background:#b08d57"></i></span>
+    <span class="txt"><b>V5 — Editorial</b><span>Асиметрична мрежа, нумерирани секции, програма како табела, филм-лента галерија.</span><u>/v5/</u></span></a>
+  <a class="card" href="v6/"><span class="dots"><i style="background:#fdfbf8"></i><i style="background:#7a2b3f"></i><i style="background:#b08d57"></i></span>
+    <span class="txt"><b>V6 — App</b><span>Лепливи табови, картички, потврда во 3 чекори, лепливо CTA со одбројување.</span><u>/v6/</u></span></a>
+  <a class="card" href="v7/"><span class="dots"><i style="background:#f7f3ec"></i><i style="background:#5d2231"></i><i style="background:#7a6f70"></i></span>
+    <span class="txt"><b>V7 — Minimal / print</b><span>Една колона, линии наместо картички, без слики, одбројување во една линија.</span><u>/v7/</u></span></a>
 
-  <a class="card" href="v6/"><b>V6 — App</b>
-    <span class="d">Апликациски: лепливи табови, заоблени картички, чекор-форма за потврда, лепливо CTA со одбројување на дното.</span>
-    <span class="u">/v6/</span></a>
+  <h2>Палети</h2>
+  <a class="card" href="v8/"><span class="dots"><i style="background:#f8f5ee"></i><i style="background:#4a6b52"></i><i style="background:#b08d57"></i></span>
+    <span class="txt"><b>V8 — Sage &amp; terracotta</b><span>Editorial · природно, надворешно</span><u>/v8/</u></span></a>
+  <a class="card" href="v9/"><span class="dots"><i style="background:#241016"></i><i style="background:#8e2f43"></i><i style="background:#d4af37"></i></span>
+    <span class="txt"><b>V9 — Oxblood &amp; gold</b><span>App · темна, вечерна, гламурозна</span><u>/v9/</u></span></a>
+  <a class="card" href="v10/"><span class="dots"><i style="background:#f5f2ec"></i><i style="background:#a4815f"></i><i style="background:#241f26"></i></span>
+    <span class="txt"><b>V10 — Champagne &amp; night</b><span>Minimal · неутрално, топло, тивко</span><u>/v10/</u></span></a>
+  <a class="card" href="v11/"><span class="dots"><i style="background:#fdf8f4"></i><i style="background:#c96f80"></i><i style="background:#b8905a"></i></span>
+    <span class="txt"><b>V11 — Blush rose &amp; gold</b><span>Editorial · нежно романтично</span><u>/v11/</u></span></a>
+  <a class="card" href="v12/"><span class="dots"><i style="background:#faf7f1"></i><i style="background:#a82f2b"></i><i style="background:#6d7f63"></i></span>
+    <span class="txt"><b>V12 — Ivory, red &amp; sage</b><span>App · класична македонска свадба</span><u>/v12/</u></span></a>
+  <a class="card" href="v13/"><span class="dots"><i style="background:#f3ede1"></i><i style="background:#294f40"></i><i style="background:#9c7f4e"></i></span>
+    <span class="txt"><b>V13 — Forest &amp; parchment</b><span>Minimal · печатен класик</span><u>/v13/</u></span></a>
 
-  <a class="card" href="v7/"><b>V7 — Minimal / print</b>
-    <span class="d">Печатен минимализам: една колона, тенки линии, без картички и слики, одбројување во една линија, програма со точки.</span>
-    <span class="u">/v7/</span></a>
-
-  <a class="card" href="v4/"><b>V4 — Картичка-колона (InviteClick)</b>
-    <span class="d">Првата по граматиката на InviteClick-поканите: колона 600 px на папир, скрол-секции, горно мени.</span>
-    <span class="u">/v4/</span></a>
-
-  <a class="card" href="./"><b>Стара верзија (v1–v3)</b>
-    <span class="d">Десет одделни екрани со восочен плик — за споредба.</span>
-    <span class="u">/</span></a>
+  <h2>Претходни</h2>
+  <a class="card" href="v4/"><span class="dots"><i style="background:#faf6ef"></i><i style="background:#5d2231"></i><i style="background:#b08d57"></i></span>
+    <span class="txt"><b>V4 — Картичка-колона (InviteClick)</b><span>Колона 600 px на папир, скрол-секции, горно мени.</span><u>/v4/</u></span></a>
+  <a class="card" href="./"><span class="dots"><i style="background:#f3ede1"></i><i style="background:#512732"></i><i style="background:#9c7f4e"></i></span>
+    <span class="txt"><b>v1–v3 — восочен плик</b><span>Десет одделни екрани, за споредба.</span><u>/</u></span></a>
 </div>
 </body>
 </html>

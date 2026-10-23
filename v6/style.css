@@ -551,3 +551,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* На тесни екрани табовите се преломуваат наместо да се сечат */
+@media (max-width: 540px) {
+  .tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+    row-gap: 6px;
+  }
+
+  .tabs a {
+    padding: 7px 12px;
+    font-size: 11.5px;
+  }
+}

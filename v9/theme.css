@@ -1,0 +1,63 @@
+/* Oxblood & gold — вечерна, гламурозна */
+:root {
+  --bg: #241016;
+  --bg-alt: #321820;
+  --card: #2c131b;
+  --paper: #241016;
+  --paper-alt: #321820;
+
+  --ink: #f4e9e0;
+  --ink-soft: #d9c2c7;
+
+  --plum: #8e2f43;
+  --plum-dark: #5f1c2a;
+  --wine: #d4af37;
+  --oxblood: #d4af37;
+  --gold: #e0c68a;
+  --gold-light: #f0e0bb;
+  --mint: #9ec9a6;
+
+  --line: rgba(244, 233, 224, 0.16);
+  --line-strong: rgba(244, 233, 224, 0.38);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 22px -12px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45), 0 20px 44px -22px rgba(0, 0, 0, 0.8);
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142, 47, 67, 0.28), transparent 62%),
+    var(--bg);
+}
+
+.tabs { background: rgba(36, 16, 22, 0.9); }
+.sticky-cta { background: rgba(36, 16, 22, 0.94); }
+.music-toggle { background: var(--card); }
+.pill { color: var(--gold); background: rgba(212, 175, 55, 0.14); }
+.map-btn { color: var(--gold); background: rgba(212, 175, 55, 0.12); }
+.map-btn:hover { background: rgba(212, 175, 55, 0.2); }
+.field input,
+.field select,
+.field textarea { background: rgba(255, 255, 255, 0.05); }
+.field input:focus,
+.field select:focus,
+.field textarea:focus { background: rgba(255, 255, 255, 0.09); }
+.chips li { background: rgba(255, 255, 255, 0.06); }
+.wish-card { background: rgba(255, 255, 255, 0.05); }
+.wish-empty { background: rgba(255, 255, 255, 0.04); }
+.gallery img { background: rgba(255, 255, 255, 0.05); }
+.hero::after { border-color: rgba(240, 224, 187, 0.28); }
+
+/* контраст на секундарните елементи во темна тема */
+.tabs a { color: var(--ink-soft); }
+.tabs a.is-active { color: #2a1219; background: var(--gold); }
+.map-btn { border: 1px solid rgba(224, 198, 138, 0.32); }
+.music-toggle {
+  color: var(--ink);
+  border-color: rgba(244, 233, 224, 0.34);
+}
+.hero-badge { color: #f7ece2; border-color: rgba(240, 224, 187, 0.45); }
+.count span { color: rgba(247, 236, 226, 0.8); }
+.section-head span { color: #d9c2c7; }
+.hint, .card p { color: #cdb7bc; }
+.foot { color: #cdb7bc; }

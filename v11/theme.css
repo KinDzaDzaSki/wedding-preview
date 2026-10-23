@@ -1,0 +1,24 @@
+/* Blush rose & gold — нежно романтично */
+:root {
+  --paper: #fdf8f4;
+  --paper-alt: #fbecef;
+  --card: #fffdfb;
+  --bg: #fdf8f4;
+  --bg-alt: #fbecef;
+
+  --ink: #3a2a2f;
+  --ink-soft: #7d666c;
+
+  --wine: #c96f80;
+  --oxblood: #c96f80;
+  --plum: #c96f80;
+  --plum-dark: #a24f61;
+  --gold: #b8905a;
+  --gold-light: #e2c6a0;
+
+  --line: rgba(58, 42, 47, 0.13);
+  --line-strong: rgba(58, 42, 47, 0.32);
+}
+
+.btn { color: #fff9f7; }
+.bar { background: rgba(253, 248, 244, 0.92); }

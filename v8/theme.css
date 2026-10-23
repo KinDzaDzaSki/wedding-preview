@@ -1,0 +1,26 @@
+/* Sage & terracotta — природно, надворешно, смирувачко */
+:root {
+  --paper: #f8f5ee;
+  --paper-alt: #ece5d7;
+  --card: #fffdf8;
+  --bg: #f8f5ee;
+  --bg-alt: #ece5d7;
+
+  --ink: #2f3a33;
+  --ink-soft: #66756b;
+
+  --wine: #4a6b52;
+  --oxblood: #4a6b52;
+  --plum: #4a6b52;
+  --plum-dark: #34503c;
+
+  --gold: #b08d57;
+  --gold-light: #d6c39a;
+  --mint: #4a6b52;
+
+  --line: rgba(47, 58, 51, 0.14);
+  --line-strong: rgba(47, 58, 51, 0.34);
+}
+
+.bar { background: rgba(248, 245, 238, 0.92); }
+.hero { background: radial-gradient(circle at 80% 0%, rgba(185, 113, 79, 0.4), transparent 55%), linear-gradient(160deg, #4a6b52 0%, #2e4636 100%); }

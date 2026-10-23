@@ -1,0 +1,28 @@
+/* Ivory, red & sage — класична македонска свадба */
+:root {
+  --bg: #faf7f1;
+  --bg-alt: #f1ebdf;
+  --card: #fffdf8;
+  --paper: #faf7f1;
+  --paper-alt: #f1ebdf;
+
+  --ink: #2b2622;
+  --ink-soft: #6d655c;
+
+  --plum: #a82f2b;
+  --plum-dark: #7d1f1c;
+  --wine: #a82f2b;
+  --oxblood: #a82f2b;
+  --gold: #b08d57;
+  --gold-light: #d9c29a;
+  --mint: #6d7f63;
+
+  --line: rgba(43, 38, 34, 0.13);
+  --line-strong: rgba(43, 38, 34, 0.34);
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 80% 0%, rgba(165, 173, 150, 0.45), transparent 55%),
+    linear-gradient(160deg, #a82f2b 0%, #7d1f1c 100%);
+}

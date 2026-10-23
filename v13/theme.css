@@ -1,0 +1,21 @@
+/* Forest & parchment — печатен класик, зелена шума */
+:root {
+  --paper: #f3ede1;
+  --paper-alt: #e8e0d0;
+  --card: #faf6ec;
+  --bg: #f3ede1;
+  --bg-alt: #e8e0d0;
+
+  --ink: #22322a;
+  --ink-soft: #5b6b60;
+
+  --wine: #294f40;
+  --wine-dark: #17362b;
+  --gold: #9c7f4e;
+  --oxblood: #294f40;
+  --plum: #294f40;
+  --plum-dark: #17362b;
+
+  --line: rgba(34, 50, 42, 0.16);
+  --line-strong: rgba(34, 50, 42, 0.4);
+}
