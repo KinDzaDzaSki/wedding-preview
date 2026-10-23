@@ -21,6 +21,7 @@ const PAGES = [
   { file: 'program.html', label: 'Програма' },
   { file: 'details.html', label: 'Дрескод и подароци' },
   { file: 'gallery.html', label: 'Галерија' },
+  { file: 'wishes.html', label: 'Честитки' },
   { file: 'rsvp.html', label: 'Потврда на присуство' },
   { file: 'thank-you.html', label: 'Ви благодариме' },
 ];
@@ -440,14 +441,16 @@ if (!envelope && hasGsap && !motionReduced) {
 
   window.gsap.fromTo(reveals, {
     autoAlpha: 0,
-    y: 0,
+    y: 8,
+    filter: 'blur(6px)',
   }, {
     autoAlpha: 1,
     y: 0,
-    duration: 0.45,
-    stagger: 0.05,
-    ease: 'power1.out',
-    clearProps: 'transform',
+    filter: 'blur(0px)',
+    duration: 0.55,
+    stagger: 0.055,
+    ease: 'power2.out',
+    clearProps: 'transform,filter',
   });
 }
 
@@ -686,117 +689,401 @@ if (countdown) {
    RSVP FORM
 ====================================================== */
 
+/* ======================================================
+   API — RSVP и честитки
+   Контракт (ист како платформите во пазарот):
+     POST /api/rsvp    { ime, prezime, attendance, guests, message }
+     GET  /api/wishes  → [{ name, message, createdAt }]
+     POST /api/wishes  { name, message }
+====================================================== */
+
+const API_BASE = String(window.WEDDING_API || '').replace(/\/+$/, '');
+const apiUrl = (path) => (API_BASE ? API_BASE + path : '');
+
+/* ---------- конфети ---------- */
+function confettiBurst(count = 90) {
+  if (motionReduced) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'confetti-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  const colors = ['#b08d57', '#d9c29a', '#512732', '#c98a92', '#f3ede1'];
+  const parts = Array.from({ length: count }, () => ({
+    x: window.innerWidth / 2 + (Math.random() - 0.5) * 120,
+    y: window.innerHeight * 0.55,
+    vx: (Math.random() - 0.5) * 7,
+    vy: -Math.random() * 9 - 3,
+    size: 4 + Math.random() * 6,
+    rot: Math.random() * Math.PI,
+    spin: (Math.random() - 0.5) * 0.3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    life: 1,
+  }));
+
+  let frame = 0;
+  const started = performance.now();
+
+  function tick(now) {
+    const elapsed = now - started;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    for (const p of parts) {
+      p.vy += 0.22;
+      p.vx *= 0.995;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.spin;
+      p.life = Math.max(0, 1 - elapsed / 2400);
+
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    }
+
+    frame += 1;
+    if (elapsed < 2400) {
+      requestAnimationFrame(tick);
+    } else {
+      canvas.remove();
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+/* ---------- RSVP ---------- */
 const rsvpForm = document.querySelector('[data-rsvp-form]');
 
 if (rsvpForm) {
   const messageElement = rsvpForm.querySelector('[data-form-message]');
-  const nameElement = rsvpForm.querySelector('[name="name"]');
+  const imeElement = rsvpForm.querySelector('[name="ime"]');
+  const prezimeElement = rsvpForm.querySelector('[name="prezime"]');
   const attendanceElement = rsvpForm.querySelector('[name="attendance"]');
+  const guestsElement = rsvpForm.querySelector('[name="guests"]');
+  const noteElement = rsvpForm.querySelector('[name="message"]');
   const guestsGroup = rsvpForm.querySelector('[data-guests-group]');
-  /* Остави празно за демо режим (одговорот останува само во конзолата).
-     За вистински одговори стави URL од Google Apps Script / Formspree. */
-  const GOOGLE_SHEETS_WEB_APP_URL = '';
+  const submitButton = rsvpForm.querySelector('[type="submit"]');
 
-  function syncGuestsVisibility() {
-    if (!guestsGroup || !attendanceElement) {
-      return;
-    }
-
-    guestsGroup.hidden = attendanceElement.value === 'no';
-  }
-
-  function setMessage(text, isError) {
-    if (!messageElement) {
-      return;
-    }
-
+  function setMessage(text, isError = false) {
+    if (!messageElement) return;
     messageElement.textContent = text;
     messageElement.classList.toggle('is-error', Boolean(isError));
   }
 
-  attendanceElement?.addEventListener('change', () => {
-    syncGuestsVisibility();
-    attendanceElement.removeAttribute('aria-invalid');
-  });
+  function syncGuestsVisibility() {
+    if (!guestsGroup || !attendanceElement) return;
+    guestsGroup.hidden = attendanceElement.value === 'no';
+  }
 
-  nameElement?.addEventListener('input', () => {
-    nameElement.removeAttribute('aria-invalid');
-  });
+  function markInvalid(element) {
+    element?.setAttribute('aria-invalid', 'true');
+    element?.focus();
+  }
 
-  syncGuestsVisibility();
-
-  rsvpForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(rsvpForm);
-
-    const name = formData.get('name')?.toString().trim();
-    const attendance = formData.get('attendance')?.toString();
-    const guests = formData.get('guests')?.toString();
-    const message = formData.get('message')?.toString().trim();
-
-    if (!name) {
-      nameElement?.setAttribute('aria-invalid', 'true');
-      setMessage('Внесете го Вашето име и презиме за да ја испратиме потврдата.', true);
-      nameElement?.focus();
-      return;
-    }
-
-    if (!attendance) {
-      attendanceElement?.setAttribute('aria-invalid', 'true');
-      setMessage('Изберете дали ќе присуствувате.', true);
-      attendanceElement?.focus();
-      return;
-    }
-
-    const payload = {
-      name,
-      attendance,
-      guests: attendance === 'no' ? '0' : (guests || '1'),
-      message: message || '',
-      timestamp: new Date().toISOString(),
-    };
-
-    if (!GOOGLE_SHEETS_WEB_APP_URL) {
-      console.info('[RSVP] DEMO — одговорот не е испратен:', payload);
-    } else {
-    try {
-      const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        body: new URLSearchParams(payload).toString(),
-      });
-
-      if (!response.ok) {
-        const text = await response.text().catch(() => '');
-        throw new Error(`HTTP ${response.status}${text ? `: ${text}` : ''}`);
-      }
-    } catch (error) {
-      console.error('Грешка при испраќање во Google Sheet:', error);
-      setMessage('Не успеа да се испрати одговорот. Обидете се повторно.', true);
-      return;
-    }
-    }
-
-    setMessage(
-      attendance === 'yes'
-        ? `Ви благодариме, ${name}. Ве очекуваме на 15 мај 2027.`
-        : `Ви благодариме што нè известивте, ${name}. Ќе ни недостасувате.`,
-      false
-    );
-
-    const submitButton = rsvpForm.querySelector('[type="submit"]');
+  function finishSuccess() {
+    setMessage('Ви благодариме! Вашата потврда е испратена 💌');
+    confettiBurst();
 
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.textContent = 'Одговорот е испратен';
     }
 
-    window.setTimeout(() => navigateTo('thank-you.html', 'next'), 1600);
+    rsvpForm.reset();
+    window.setTimeout(() => navigateTo('thank-you.html', 'next'), 1800);
+  }
+
+  rsvpForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const ime = (imeElement?.value || '').trim();
+    const prezime = (prezimeElement?.value || '').trim();
+    const attendance = attendanceElement?.value || '';
+    const guests = guestsElement?.value || '1';
+    const message = (noteElement?.value || '').trim();
+
+    if (!ime) {
+      markInvalid(imeElement);
+      setMessage('Внесете го Вашето име.', true);
+      return;
+    }
+
+    if (!attendance) {
+      markInvalid(attendanceElement);
+      setMessage('Ве молиме изберете дали доаѓате.', true);
+      return;
+    }
+
+    if (submitButton) submitButton.disabled = true;
+    setMessage('Се испраќа...');
+
+    const payload = {
+      ime,
+      prezime,
+      attendance,
+      guests: attendance === 'no' ? '0' : guests,
+      message,
+    };
+
+    if (!API_BASE) {
+      /* Демо режим — без бекенд. */
+      console.info('[RSVP] DEMO — одговорот не е испратен:', payload);
+      finishSuccess();
+      return;
+    }
+
+    try {
+      const response = await fetch(apiUrl('/api/rsvp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      finishSuccess();
+    } catch (error) {
+      const offline = String(error.message || '').includes('Failed to fetch');
+      setMessage(
+        offline
+          ? 'Нема врска со серверот. Обидете се повторно.'
+          : error.message || 'Грешка при испраќање. Обидете се повторно.',
+        true,
+      );
+      if (submitButton) submitButton.disabled = false;
+    }
   });
+
+  attendanceElement?.addEventListener('change', () => {
+    syncGuestsVisibility();
+    attendanceElement.removeAttribute('aria-invalid');
+  });
+
+  [imeElement, prezimeElement].forEach((el) =>
+    el?.addEventListener('input', () => el.removeAttribute('aria-invalid')),
+  );
+
+  syncGuestsVisibility();
 }
+
+/* ======================================================
+   ЧЕСТИТКИ (wish wall)
+====================================================== */
+
+const wishForm = document.querySelector('[data-wish-form]');
+
+if (wishForm) {
+  const list = document.querySelector('[data-wish-list]');
+  const empty = document.querySelector('[data-wish-empty]');
+  const nameElement = wishForm.querySelector('[name="name"]');
+  const messageElement = wishForm.querySelector('[name="message"]');
+  const statusElement = wishForm.querySelector('[data-wish-message-status]');
+  const countElement = wishForm.querySelector('[data-wish-count]');
+  const suggestButton = wishForm.querySelector('[data-wish-suggest]');
+  const submitButton = wishForm.querySelector('[type="submit"]');
+
+  const SUGGESTIONS = [
+    'Ви посакувам љубов што расте со секој изминат ден. Среќен брак!',
+    'Нека вашиот дом секогаш биде полн со смеа, топлина и разбирање.',
+    'Честитки! Нека ова биде почеток на најубавата авантура во вашиот живот.',
+    'Ви посакувам бескрајна среќа, здравје и многу заеднички соништа.',
+    'Нека љубовта што ја чувствувате денес ве води низ сите години што доаѓаат.',
+  ];
+
+  let lastSuggestion = '';
+
+  function setStatus(text, isError = false) {
+    if (!statusElement) return;
+    statusElement.textContent = text;
+    statusElement.classList.toggle('is-error', Boolean(isError));
+  }
+
+  function render(items) {
+    if (!list) return;
+
+    list.querySelectorAll('.wish-card').forEach((el) => el.remove());
+
+    if (!items.length) {
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    if (empty) empty.hidden = true;
+
+    items.slice(0, 40).forEach((wish) => {
+      const item = document.createElement('li');
+      item.className = 'wish-card';
+
+      const text = document.createElement('p');
+      text.className = 'wish-text';
+      text.textContent = wish.message;
+
+      const meta = document.createElement('p');
+      meta.className = 'wish-meta';
+      meta.textContent = wish.name;
+
+      item.append(text, meta);
+      list.append(item);
+    });
+  }
+
+  function updateCount() {
+    if (!countElement || !messageElement) return;
+    countElement.textContent = `${messageElement.value.length} / 300`;
+  }
+
+  async function loadWishes() {
+    if (!API_BASE) {
+      render([]);
+      if (empty) {
+        empty.hidden = false;
+        empty.textContent = 'Демо режим: желбите ќе се појават кога ќе биде поврзан бекендот.';
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch(apiUrl('/api/wishes'), { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      render(Array.isArray(data) ? data : []);
+    } catch (error) {
+      if (empty) {
+        empty.hidden = false;
+        empty.textContent = 'Желбите не можат да се вчитаат во моментов.';
+      }
+    }
+  }
+
+  suggestButton?.addEventListener('click', () => {
+    const pool = SUGGESTIONS.filter((s) => s !== lastSuggestion);
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    lastSuggestion = pick;
+    if (messageElement) {
+      messageElement.value = pick;
+      updateCount();
+      messageElement.focus();
+    }
+  });
+
+  messageElement?.addEventListener('input', updateCount);
+
+  wishForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const name = (nameElement?.value || '').trim();
+    const message = (messageElement?.value || '').trim();
+
+    if (!name) {
+      nameElement?.setAttribute('aria-invalid', 'true');
+      nameElement?.focus();
+      setStatus('Внесете го Вашето име.', true);
+      return;
+    }
+
+    if (!message) {
+      messageElement?.setAttribute('aria-invalid', 'true');
+      messageElement?.focus();
+      setStatus('Напишете желба.', true);
+      return;
+    }
+
+    if (submitButton) submitButton.disabled = true;
+    setStatus('Се испраќа...');
+
+    if (!API_BASE) {
+      const demo = { id: 'demo', name, message, createdAt: new Date().toISOString() };
+      console.info('[WISHES] DEMO — не е испратено:', demo);
+      const existing = [...(list?.querySelectorAll('.wish-card') || [])].length;
+      render([demo]);
+      setStatus('Демо режим: желбата не е зачувана на сервер.');
+      wishForm.reset();
+      updateCount();
+      if (submitButton) submitButton.disabled = false;
+      return;
+    }
+
+    try {
+      const response = await fetch(apiUrl('/api/wishes'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      wishForm.reset();
+      updateCount();
+      setStatus('Ви благодариме за убавите желби ♡');
+      confettiBurst(36);
+      await loadWishes();
+    } catch (error) {
+      setStatus(error.message || 'Грешка при испраќање. Обидете се повторно.', true);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+
+  loadWishes();
+  updateCount();
+}
+
+/* ======================================================
+   СКРОЛ ЗНАК — само кога страницата е повисока од екранот
+====================================================== */
+
+(() => {
+  if (!document.querySelector('.page')) return;
+
+  let hint = null;
+
+  function update() {
+    const needsHint = document.documentElement.scrollHeight > window.innerHeight + 48;
+
+    if (needsHint && !hint) {
+      hint = document.createElement('p');
+      hint.className = 'scroll-hint';
+      hint.setAttribute('aria-hidden', 'true');
+      hint.textContent = 'Скролувај надолу';
+      document.body.appendChild(hint);
+    }
+
+    if (!needsHint && hint) {
+      hint.remove();
+      hint = null;
+      return;
+    }
+
+    if (hint) {
+      hint.classList.toggle('is-hidden', window.scrollY > 40);
+    }
+  }
+
+  window.addEventListener('load', update);
+  window.addEventListener('resize', update, { passive: true });
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
 
 
 /* ======================================================

@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body data-previous="gallery.html" data-next="thank-you.html">
+<body data-previous="wishes.html" data-next="thank-you.html">
   <main class="page page--forest">
     <div class="page-grain" aria-hidden="true"></div>
 
@@ -33,17 +33,32 @@
       <p class="rsvp-deadline reveal reveal-delay-2">Ве молиме потврдете до 1 мај 2027</p>
 
       <form class="rsvp-form reveal reveal-delay-2" data-rsvp-form novalidate>
-        <div class="form-group">
-          <label class="form-label" for="name">Име и презиме</label>
-          <input
-            class="form-input"
-            id="name"
-            name="name"
-            type="text"
-            placeholder="Име и презиме"
-            autocomplete="name"
-            required
-          >
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ime">Име</label>
+            <input
+              class="form-input"
+              id="ime"
+              name="ime"
+              type="text"
+              placeholder="Име"
+              autocomplete="given-name"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prezime">Презиме</label>
+            <input
+              class="form-input"
+              id="prezime"
+              name="prezime"
+              type="text"
+              placeholder="Презиме"
+              autocomplete="family-name"
+              required
+            >
+          </div>
         </div>
 
         <div class="form-group">
@@ -88,13 +103,14 @@
   <button class="music-toggle" type="button" data-music-toggle aria-pressed="false" aria-label="Пушти музика во позадина">♪</button>
   <audio data-music-loop loop preload="none" src="audio/ambient.mp3"></audio>
     <nav class="page-nav" aria-label="Навигација низ поканата">
-      <a class="page-nav-button" href="gallery.html" data-go-previous aria-label="Претходна страница: Галерија">↑</a>
-      <div class="page-progress" data-page-progress="8"></div>
+      <a class="page-nav-button" href="wishes.html" data-go-previous aria-label="Претходна страница: Честитки">↑</a>
+      <div class="page-progress" data-page-progress="9"></div>
       <a class="page-nav-button" href="thank-you.html" data-go-next aria-label="Следна страница: Ви благодариме">↓</a>
     </nav>
   </main>
 
   <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+  <script src="js/config.js"></script>
   <script defer src="js/main.js"></script>
 </body>
 </html>

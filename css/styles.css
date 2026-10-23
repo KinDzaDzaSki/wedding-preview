@@ -2952,3 +2952,149 @@ body.forced-open .wax-scroll-interior .wax-scroll-parchment * {
   transform: none !important;
   translate: none !important;
 }
+
+
+/* ======================================================
+   V3 — RSVP со бекенд, честитки, конфети, скрол знак
+====================================================== */
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 12px;
+}
+
+.form-message.is-error {
+  color: #8a2436;
+}
+
+.wish-form {
+  max-width: 620px;
+  margin: 26px auto 0;
+  text-align: left;
+}
+
+.wish-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.wish-suggest {
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+}
+
+.wish-suggest:hover,
+.wish-suggest:focus-visible {
+  color: var(--ink);
+  border-color: var(--gilt);
+}
+
+.wish-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+  max-width: 820px;
+  margin: 26px auto 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.wish-card {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 253, 247, 0.62);
+}
+
+.wish-text {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.wish-meta {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.wish-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 16px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  text-align: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: 16px;
+}
+
+.confetti-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.scroll-hint {
+  position: fixed;
+  z-index: 15;
+  bottom: calc(var(--frame-inset) + var(--nav-height) + 4px);
+  left: 50%;
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  transform: translateX(-50%);
+  transition: opacity 400ms ease;
+  pointer-events: none;
+  animation: hint-drift 2.6s ease-in-out infinite;
+}
+
+.scroll-hint::after {
+  content: ' ↓';
+}
+
+.scroll-hint.is-hidden {
+  opacity: 0;
+}
+
+.page--forest .scroll-hint {
+  color: var(--ink-invert-soft);
+}
+
+@keyframes hint-drift {
+  0%, 100% { translate: 0 0; opacity: 0.75; }
+  50% { translate: 0 4px; opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .wish-grid {
+    gap: 8px;
+  }
+
+  .wish-card {
+    padding: 12px 14px;
+  }
+
+  .wish-text {
+    font-size: 0.95rem;
+  }
+}

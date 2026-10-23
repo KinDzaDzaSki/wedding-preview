@@ -235,6 +235,156 @@ async function serveImage(env, key, corsHeaders) {
   });
 }
 
+/* ---------- RSVP + wishes (market contract) ----------
+ *   POST /api/rsvp    { ime, prezime, attendance: "yes"|"no", guests, message }
+ *   GET  /api/rsvp    admin only (x-admin-token) → rows + counts
+ *   GET  /api/wishes  → newest first
+ *   POST /api/wishes  { name, message } → the created record
+ *
+ * Both live in the same R2 bucket as the photos, under their own prefixes, so
+ * there is no KV/D1 to provision: one list() returns everything.
+ */
+
+const MAX_IME = 40;
+const MAX_PREZIME = 40;
+const MAX_WISH = 300;
+const MAX_RSVP_MSG = 500;
+const MAX_GUESTS = 20;
+
+/* Best-effort abuse guard — per isolate, resets on deploy.
+   Not a security boundary; it only stops a bored guest hammering POST. */
+const writeLog = new Map();
+
+function throttled(req, limit = 30, windowMs = 10 * 60 * 1000) {
+  /* Без Cloudflare (локален dev) нема сигурен идентитет — не ограничувај.
+     Во продукција limit-от е висок намерно: гостите на свадба често
+     делат еден NAT/CGNAT IP, па строг лимит би ги блокирал своите. */
+  const ip = req.headers.get('cf-connecting-ip');
+  if (!ip) return false;
+  const now = Date.now();
+  const hits = (writeLog.get(ip) || []).filter((t) => now - t < windowMs);
+  hits.push(now);
+  writeLog.set(ip, hits);
+  if (writeLog.size > 5000) writeLog.clear();
+  return hits.length > limit;
+}
+
+async function readJson(req) {
+  const type = req.headers.get('content-type') || '';
+  if (!type.includes('application/json')) return null;
+  try {
+    const body = await req.json();
+    return body && typeof body === 'object' ? body : null;
+  } catch {
+    return null;
+  }
+}
+
+const newKey = (prefix) =>
+  `${prefix}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`;
+
+async function postRsvp(req, env, corsHeaders) {
+  if (throttled(req)) return json({ message: 'Премногу обиди. Обидете се подоцна.' }, 429, corsHeaders);
+
+  const body = await readJson(req);
+  if (!body) return json({ message: 'Очекуван JSON.' }, 400, corsHeaders);
+
+  const ime = clean(body.ime, MAX_IME);
+  const prezime = clean(body.prezime, MAX_PREZIME);
+  const attendance = body.attendance === 'no' ? 'no' : body.attendance === 'yes' ? 'yes' : '';
+  const message = clean(body.message, MAX_RSVP_MSG);
+
+  if (!ime) return json({ message: 'Внесете го Вашето име.' }, 400, corsHeaders);
+  if (!attendance) return json({ message: 'Ве молиме изберете дали доаѓате.' }, 400, corsHeaders);
+
+  let guests = Number.parseInt(body.guests, 10);
+  if (!Number.isFinite(guests)) guests = 1;
+  guests = Math.min(Math.max(guests, 1), MAX_GUESTS);
+  if (attendance === 'no') guests = 0;
+
+  const ts = Date.now();
+  const id = crypto.randomUUID();
+  const record = { id, ime, prezime, attendance, guests, message, createdAt: new Date(ts).toISOString() };
+
+  await env.PHOTOS.put(newKey('rsvp'), JSON.stringify(record), {
+    httpMetadata: { contentType: 'application/json; charset=utf-8' },
+    customMetadata: {
+      ime, prezime, attendance, guests: String(guests), ts: String(ts),
+    },
+  });
+
+  return json({ ok: true, id }, 200, corsHeaders);
+}
+
+async function listRsvp(req, env, corsHeaders) {
+  const token = req.headers.get('x-admin-token') || '';
+  if (!env.ADMIN_TOKEN || !timingSafeEqual(token, env.ADMIN_TOKEN)) {
+    return json({ message: 'Неовластено.' }, 401, corsHeaders);
+  }
+
+  const out = await env.PHOTOS.list({ prefix: 'rsvp/', limit: 1000, include: ['customMetadata'] });
+  const rows = out.objects
+    .map((o) => {
+      const m = o.customMetadata || {};
+      return {
+        id: o.key.slice('rsvp/'.length).replace(/\.json$/, ''),
+        ime: m.ime || '', prezime: m.prezime || '',
+        attendance: m.attendance || '', guests: Number(m.guests) || 0,
+        ts: Number(m.ts) || 0,
+      };
+    })
+    .sort((a, b) => b.ts - a.ts);
+
+  const yes = rows.filter((r) => r.attendance === 'yes');
+  return json({
+    total: rows.length,
+    coming: yes.length,
+    declined: rows.filter((r) => r.attendance === 'no').length,
+    headcount: yes.reduce((n, r) => n + r.guests, 0),
+    rows,
+  }, 200, corsHeaders);
+}
+
+async function listWishes(env, corsHeaders) {
+  const out = await env.PHOTOS.list({ prefix: 'wishes/', limit: 200, include: ['customMetadata'] });
+  const wishes = out.objects
+    .map((o) => {
+      const m = o.customMetadata || {};
+      return {
+        id: o.key.slice('wishes/'.length).replace(/\.json$/, ''),
+        name: m.name || '',
+        message: m.message || '',
+        createdAt: new Date(Number(m.ts) || Date.now()).toISOString(),
+      };
+    })
+    .filter((w) => w.message)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+  return json(wishes, 200, corsHeaders);
+}
+
+async function postWish(req, env, corsHeaders) {
+  if (throttled(req)) return json({ message: 'Премногу обиди. Обидете се подоцна.' }, 429, corsHeaders);
+
+  const body = await readJson(req);
+  if (!body) return json({ message: 'Очекуван JSON.' }, 400, corsHeaders);
+
+  const name = clean(body.name, MAX_IME);
+  const message = clean(body.message, MAX_WISH);
+  if (!name) return json({ message: 'Внесете го Вашето име.' }, 400, corsHeaders);
+  if (!message) return json({ message: 'Напишете желба.' }, 400, corsHeaders);
+
+  const ts = Date.now();
+  const id = crypto.randomUUID();
+
+  await env.PHOTOS.put(newKey('wishes'), JSON.stringify({ id, name, message }), {
+    httpMetadata: { contentType: 'application/json; charset=utf-8' },
+    customMetadata: { name, message, ts: String(ts) },
+  });
+
+  return json({ id, name, message, createdAt: new Date(ts).toISOString() }, 201, corsHeaders);
+}
+
 /* ---------- entry ---------- */
 
 export default {
@@ -246,8 +396,13 @@ export default {
 
     try {
       if (pathname === '/api/health') {
-        return json({ ok: true, service: 'wedding-gallery' }, 200, corsHeaders);
+        return json({ ok: true, service: 'wedding-invite', routes: ['/api/rsvp', '/api/wishes', '/api/photos'] }, 200, corsHeaders);
       }
+      if (pathname === '/api/rsvp' && req.method === 'POST') return await postRsvp(req, env, corsHeaders);
+      if (pathname === '/api/rsvp' && req.method === 'GET') return await listRsvp(req, env, corsHeaders);
+      if (pathname === '/api/wishes' && req.method === 'GET') return await listWishes(env, corsHeaders);
+      if (pathname === '/api/wishes' && req.method === 'POST') return await postWish(req, env, corsHeaders);
+
       if (pathname === '/api/photos' && req.method === 'POST') return await upload(req, env, corsHeaders);
       if (pathname === '/api/photos' && req.method === 'GET') return await list(req, env, corsHeaders);
 
