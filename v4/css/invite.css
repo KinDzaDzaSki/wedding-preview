@@ -432,7 +432,7 @@ textarea {
 }
 
 .paperCard + .paperCard {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .card-time {
@@ -815,7 +815,7 @@ textarea {
   position: fixed;
   z-index: 55;
   right: max(14px, calc((100vw - var(--page-width)) / 2 + 14px));
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: grid;
   place-items: center;
   width: 44px;
