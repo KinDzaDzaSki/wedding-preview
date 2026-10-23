@@ -1,0 +1,553 @@
+/* ==========================================================================
+   V6 — APP
+   Апликациски ритам: лепливи табови, заоблени картички, меки сенки,
+   чекор-форма со прогрес и лепливо CTA на дното. Manrope + Cormorant.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --bg: #fdfbf8;
+  --bg-alt: #f6efe8;
+  --card: #ffffff;
+  --ink: #221c1e;
+  --ink-soft: #7b6d70;
+  --plum: #7a2b3f;
+  --plum-dark: #571c2b;
+  --gold: #b08d57;
+  --mint: #2f6f5a;
+
+  --line: rgba(34, 28, 30, 0.09);
+  --shadow-sm: 0 1px 2px rgba(34, 28, 30, 0.06), 0 6px 18px -10px rgba(34, 28, 30, 0.22);
+  --shadow-md: 0 2px 6px rgba(34, 28, 30, 0.06), 0 18px 40px -20px rgba(34, 28, 30, 0.3);
+
+  --sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+
+  --radius: 22px;
+  --pad: clamp(16px, 4.6vw, 22px);
+  --max: 640px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+
+body.menu-open { overflow: hidden; }
+
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+.app {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 var(--pad) 40px;
+}
+
+/* ---------- лепливи табови ---------- */
+.tabs {
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  display: flex;
+  gap: 6px;
+  margin: 0 calc(var(--pad) * -1);
+  padding: 10px var(--pad);
+  background: rgba(253, 251, 248, 0.9);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tabs a {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+.tabs a.is-active {
+  color: #fff;
+  background: var(--plum);
+}
+
+/* ---------- херо ---------- */
+.hero {
+  position: relative;
+  margin: 18px 0 0;
+  padding: clamp(26px, 7vw, 40px) var(--pad) clamp(24px, 6vw, 34px);
+  text-align: center;
+  color: #fdf7f2;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(176, 141, 87, 0.45), transparent 55%),
+    linear-gradient(160deg, var(--plum) 0%, var(--plum-dark) 100%);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 22px;
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  padding: 6px 14px;
+  margin-bottom: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(253, 247, 242, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 11vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.hero h1 span {
+  display: block;
+  margin: 8px 0;
+  font-size: 0.42em;
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-date {
+  margin: 18px 0 0;
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(253, 247, 242, 0.84);
+}
+
+/* ---------- одбројување во херо ---------- */
+.count {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.count div {
+  padding: 10px 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+}
+
+.count b {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.count span {
+  display: block;
+  margin-top: 2px;
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(253, 247, 242, 0.7);
+}
+
+/* ---------- секции и картички ---------- */
+.section { margin-top: 30px; scroll-margin-top: 66px; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.section-head span {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.card {
+  padding: var(--pad);
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.card + .card { margin-top: 10px; }
+
+.card h3 {
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 1.28rem;
+  font-weight: 600;
+}
+
+.card p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pill {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--plum);
+  background: rgba(122, 43, 63, 0.08);
+  border-radius: 999px;
+}
+
+.map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--plum);
+  background: rgba(122, 43, 63, 0.07);
+  border-radius: 999px;
+}
+
+.map-btn:hover { background: rgba(122, 43, 63, 0.13); }
+
+/* ---------- програма ---------- */
+.program { display: grid; gap: 2px; }
+
+.program li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--line);
+}
+
+.program li:last-child { border-bottom: 0; }
+
+.program b {
+  flex: 0 0 54px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--plum);
+}
+
+/* ---------- чипови ---------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  font-size: 12px;
+  background: var(--bg-alt);
+  border-radius: 999px;
+}
+
+.chips i {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+}
+
+/* ---------- галерија ---------- */
+.gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.gallery img {
+  width: 100%;
+  border-radius: 16px;
+  background: var(--bg-alt);
+}
+
+/* ---------- форма ---------- */
+.form { display: grid; gap: 12px; margin-top: 14px; }
+
+.field { display: grid; gap: 5px; }
+
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  background: var(--bg-alt);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--plum);
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] { border-color: #c0392b; }
+
+.field textarea { min-height: 92px; resize: vertical; }
+
+.two { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+
+.hint { font-size: 11.5px; color: var(--ink-soft); }
+
+.msg { min-height: 1.2em; margin: 0; font-size: 13px; color: var(--mint); }
+.msg.is-error { color: #c0392b; }
+
+.btn {
+  justify-self: stretch;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  cursor: pointer;
+  background: var(--plum);
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px -14px rgba(122, 43, 63, 0.8);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.btn:hover { background: var(--plum-dark); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+.suggest {
+  justify-self: start;
+  padding: 7px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--plum);
+  cursor: pointer;
+  background: rgba(122, 43, 63, 0.07);
+  border: 0;
+  border-radius: 999px;
+}
+
+/* ---------- чекор-форма ---------- */
+.steps { display: flex; gap: 6px; margin: 4px 0 10px; }
+
+.steps i {
+  flex: 1;
+  height: 3px;
+  background: var(--line);
+  border-radius: 999px;
+  transition: background 220ms ease;
+}
+
+.steps i.is-active { background: var(--plum); }
+
+.step { display: grid; gap: 12px; }
+.step[hidden] { display: none; }
+
+.step-nav { display: flex; gap: 8px; }
+
+.step-nav .btn { flex: 1; }
+
+.btn--soft {
+  color: var(--plum);
+  background: rgba(122, 43, 63, 0.08);
+  box-shadow: none;
+}
+
+/* ---------- честитки ---------- */
+.wishes { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+
+.wish-card {
+  padding: 14px 16px;
+  background: var(--bg-alt);
+  border-radius: 16px;
+}
+
+.wish-text { margin: 0 0 6px; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
+
+.wish-meta {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.wish-empty {
+  padding: 14px;
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--ink-soft);
+  background: var(--bg-alt);
+  border-radius: 16px;
+}
+
+/* ---------- лепливо CTA ---------- */
+.sticky-cta {
+  position: fixed;
+  z-index: 45;
+  left: 50%;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: var(--max);
+  padding: 12px var(--pad) calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(253, 251, 248, 0.94);
+  border-top: 1px solid var(--line);
+  transform: translateX(-50%);
+  transition: transform 300ms ease, opacity 300ms ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sticky-cta.is-hidden { transform: translate(-50%, 110%); opacity: 0; }
+
+.sticky-cta div { display: grid; }
+
+.sticky-cta small { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+
+.sticky-cta b { font-size: 13.5px; }
+
+.sticky-cta a {
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--plum);
+  border-radius: 14px;
+}
+
+/* ---------- подножје ---------- */
+.foot {
+  margin-top: 34px;
+  padding-top: 18px;
+  font-size: 11.5px;
+  text-align: center;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- музика ---------- */
+.music-toggle {
+  position: fixed;
+  z-index: 44;
+  left: calc(50% - min(50vw, var(--max) / 2) + 12px);
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.music-toggle[aria-pressed='true'] { color: var(--gold); }
+
+/* ---------- reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-visible { opacity: 1; transform: none; }
+
+.reveal-delay-1 { transition-delay: 70ms; }
+.reveal-delay-2 { transition-delay: 140ms; }
+.reveal-delay-3 { transition-delay: 210ms; }
+
+.confetti-canvas { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
